@@ -1,34 +1,50 @@
 # go-commit
-commit git project with golang cobra commands. format changed go source files.
 
-# install
+Smart Git commit tool with auto Go changed code formatting capabilities.
+
+## Install
 
 ```bash
 go install github.com/go-mate/go-commit/cmd/go-commit@latest
 ```
 
-# command
+## Usage
 
 ```bash
-cd project-path && go-commit -m 'message' --format-go
+# Basic usage
+go-commit -m "your commit message" --format-go
+
+# With user info
+go-commit -u "username" -e "email@example.com" -m "message" --format-go
+
+# Amend previous commit
+go-commit --amend -m "updated message" --format-go
+
+# Force amend (even after push)
+go-commit --amend --force -m "force amend message"
 ```
 
-Can also add alias:
+## Recommended Aliases
+
 ```bash
-alias gcm='go-commit --username=yangyile --format-go'
-alias gca='go-commit --username=yangyile --format-go --amend'
+# Quick commit with formatting
+alias gcm='go-commit --username=yourname --format-go'
+
+# Quick amend with formatting
+alias gca='go-commit --username=yourname --format-go --amend'
 ```
 
-Can use `gcm` to commit all changes with a message and format Go source files:
-```bash
-cd project-path
-gca -m message
-```
+### Usage Examples
 
-Can use `gca` to amend the last commit with a message and format Go src files:
 ```bash
-cd project-path
-gca -m message
+# Commit with message and Go formatting
+gcm -m "add new feature"
+
+# Amend last commit
+gca -m "fix typo in commit message"
+
+# Force amend (dangerous - use with caution)
+gca -m "force update pushed to remote" --force
 ```
 
 ## License
