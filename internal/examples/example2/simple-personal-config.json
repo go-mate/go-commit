@@ -1,0 +1,34 @@
+{
+  "signatures": [
+    {
+      "name": "work-projects",
+      "username": "bob.smith",
+      "eddress": "bob.smith@company.com",
+      "remotePatterns": [
+        "git@github.enterprise.company.com:*",
+        "https://github.enterprise.company.com/*",
+        "git@gitlab.company.com:*",
+        "https://gitlab.company.com/*",
+        "git@git.company.internal:*"
+      ]
+    },
+    {
+      "name": "personal-github",
+      "username": "bob-dev",
+      "eddress": "bob.personal@gmail.com",
+      "remotePatterns": [
+        "git@github.com:bob-dev/*",
+        "https://github.com/bob-dev/*"
+      ]
+    },
+    {
+      "name": "personal-gitlab",
+      "username": "bob-dev", 
+      "eddress": "bob.personal@gmail.com",
+      "remotePatterns": [
+        "git@gitlab.com:bob-dev/*",
+        "https://gitlab.com/bob-dev/*"
+      ]
+    }
+  ]
+}

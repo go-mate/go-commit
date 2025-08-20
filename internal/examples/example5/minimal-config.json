@@ -1,0 +1,12 @@
+{
+  "signatures": [
+    {
+      "name": "main-identity",
+      "username": "developer",
+      "eddress": "developer@example.com",
+      "remotePatterns": [
+        "*"
+      ]
+    }
+  ]
+}

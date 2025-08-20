@@ -1,0 +1,45 @@
+{
+  "signatures": [
+    {
+      "name": "client-alpha",
+      "username": "charlie.contractor",
+      "eddress": "charlie@client-alpha.com",
+      "remotePatterns": [
+        "git@github.com:client-alpha/*",
+        "https://github.com/client-alpha/*",
+        "git@gitlab.client-alpha.com:*",
+        "https://gitlab.client-alpha.com/*"
+      ]
+    },
+    {
+      "name": "client-beta",
+      "username": "charlie.freelancer",
+      "eddress": "charlie@client-beta.org",
+      "remotePatterns": [
+        "git@gitlab.com:client-beta/*",
+        "https://gitlab.com/client-beta/*",
+        "git@git.client-beta.internal:*"
+      ]
+    },
+    {
+      "name": "personal-projects",
+      "username": "charlie",
+      "eddress": "charlie.freelancer@protonmail.com",
+      "remotePatterns": [
+        "git@github.com:charlie/*",
+        "https://github.com/charlie/*",
+        "git@gitlab.com:charlie/*",
+        "https://gitlab.com/charlie/*"
+      ]
+    },
+    {
+      "name": "consulting-work",
+      "username": "consulting-charlie",
+      "eddress": "hello@charlie-consulting.dev",
+      "remotePatterns": [
+        "git@git.charlie-consulting.dev:*",
+        "https://git.charlie-consulting.dev/*"
+      ]
+    }
+  ]
+}

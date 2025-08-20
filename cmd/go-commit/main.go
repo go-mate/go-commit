@@ -14,7 +14,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/yyle88/eroticgo"
 	"github.com/yyle88/must"
+	"github.com/yyle88/neatjson/neatjsons"
 	"github.com/yyle88/rese"
+	"github.com/yyle88/tern/zerotern"
 	"github.com/yyle88/zaplog"
 )
 
@@ -28,6 +30,10 @@ func main() {
 	// 初始化提交配置标志
 	commitFlags := &commitmate.CommitFlags{}
 
+	// Configuration file path flag
+	// 配置文件路径标志
+	var configPath string
+
 	// Define root command with comprehensive Git commit functionality
 	// 定义具有全面 Git 提交功能的根命令
 	rootCmd := cobra.Command{
@@ -35,6 +41,18 @@ func main() {
 		Short: "Smart Git commit tool with Go code formatting",
 		Long:  "go-commit is a Git commit tool that auto formats changed Go code and provides flexible commit options",
 		Run: func(cmd *cobra.Command, args []string) {
+			// Try to load signature config if config file is provided
+			// 如果提供了配置文件则尝试加载签名配置
+			if configPath != "" {
+				if signature := rese.V1(commitmate.GetSignatureConfig(configPath, projectRoot)); signature != nil {
+					zaplog.SUG.Debugln("Using signature config:", neatjsons.S(signature))
+					// Override flags with config if not explicitly set
+					// 如果没有明确设置则用配置覆盖标志
+					commitFlags.Username = zerotern.VV(signature.Username, commitFlags.Username)
+					commitFlags.Eddress = zerotern.VV(signature.Eddress, commitFlags.Eddress)
+				}
+			}
+
 			must.Done(commitmate.GitCommit(projectRoot, commitFlags))
 		},
 	}
@@ -47,6 +65,9 @@ func main() {
 	rootCmd.PersistentFlags().StringVarP(&commitFlags.Eddress, "eddress", "e", "", "email address")
 	rootCmd.PersistentFlags().BoolVar(&commitFlags.NoCommit, "no-commit", false, "stage changes without committing")
 	rootCmd.PersistentFlags().BoolVar(&commitFlags.FormatGo, "format-go", false, "format changed go files")
+
+	// 配置其它信息比如用户信息
+	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "", "path to go-commit configuration file")
 
 	// Execute the CLI application
 	// 执行 CLI 应用程序

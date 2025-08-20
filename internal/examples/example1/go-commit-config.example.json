@@ -1,0 +1,41 @@
+{
+  "signatures": [
+    {
+      "name": "personal-github",
+      "username": "alice",
+      "eddress": "alice.dev@gmail.com",
+      "remotePatterns": [
+        "git@github.com:alice/*",
+        "https://github.com/alice/*"
+      ]
+    },
+    {
+      "name": "personal-gitlab",
+      "username": "alice",
+      "eddress": "alice.dev@gmail.com",
+      "remotePatterns": [
+        "git@gitlab.com:alice/*",
+        "https://gitlab.com/alice/*"
+      ]
+    },
+    {
+      "name": "github-contributions",
+      "username": "alice-oss",
+      "eddress": "alice.opensource@protonmail.com",
+      "remotePatterns": [
+        "git@github.com:golang/*",
+        "git@github.com:kubernetes/*",
+        "https://github.com/golang/*",
+        "https://github.com/kubernetes/*"
+      ]
+    },
+    {
+      "name": "fallback-default",
+      "username": "alice",
+      "eddress": "alice.dev@gmail.com",
+      "remotePatterns": [
+        "*"
+      ]
+    }
+  ]
+}

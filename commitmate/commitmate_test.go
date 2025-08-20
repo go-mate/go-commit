@@ -1,10 +1,13 @@
 package commitmate
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/go-mate/go-commit/internal/tests"
+	"github.com/go-mate/go-commit/internal/utils"
 	"github.com/go-xlan/gogit"
 	"github.com/stretchr/testify/require"
 	"github.com/yyle88/must"
@@ -15,7 +18,7 @@ import (
 // setupTestRepo creates a temporary git repository for testing
 // Environment setup must succeed, so we use rese/must for all operations
 func setupTestRepo() (string, func()) {
-	// Create temporary directory - must succeed
+	// Create temp DIR - must succeed
 	tempDIR := rese.V1(os.MkdirTemp("", "go-commit-test-*"))
 
 	// Initialize git repository using osexec - must succeed
@@ -23,10 +26,6 @@ func setupTestRepo() (string, func()) {
 
 	// Initialize git repository - must succeed
 	rese.V1(execConfig.Exec("git", "init"))
-
-	// Configure git user (required for commits) - must succeed
-	rese.V1(execConfig.Exec("git", "config", "user.name", "Test User"))
-	rese.V1(execConfig.Exec("git", "config", "user.email", "test@example.com"))
 
 	// Create initial commit to make it a valid repo - must succeed
 	testFile := filepath.Join(tempDIR, "README.md")
@@ -84,7 +83,7 @@ func TestGitCommit_WithNewFile(t *testing.T) {
 	// Verify file was committed - test verification uses require
 	client := rese.P1(gogit.New(tempDIR))
 	status := rese.V1(client.Status())
-	require.Empty(t, status, "Working directory should be clean after commit")
+	require.Empty(t, status)
 }
 
 func TestGitCommit_NoCommitFlag(t *testing.T) {
@@ -110,7 +109,7 @@ func TestGitCommit_NoCommitFlag(t *testing.T) {
 	// Verify file was NOT committed (still in staging) - test verification uses require
 	client := rese.P1(gogit.New(tempDIR))
 	status := rese.V1(client.Status())
-	require.NotEmpty(t, status, "Working directory should have staged changes")
+	require.NotEmpty(t, status)
 }
 
 func TestGitCommit_WithGoFileFormatting(t *testing.T) {
@@ -164,19 +163,19 @@ func TestFormatGoFiles_SkipGeneratedFiles(t *testing.T) {
 	client := rese.P1(gogit.New(tempDIR))
 	must.Done(client.AddAll())
 
-	// Format files with custom filter that only allows main.go - must succeed for test setup
+	// Format files with custom filter that just allows main.go - must succeed for test setup
 	allowOnlyMain := func(path string) bool {
 		return filepath.Base(path) == "main.go"
 	}
 	must.Done(FormatChangedGoFiles(tempDIR, client, allowOnlyMain))
 
-	// Check that only main.go was formatted (has proper spacing) - test verification uses require
+	// Check that just main.go was formatted (has proper spacing) - test verification uses require
 	mainContent := rese.V1(os.ReadFile(filepath.Join(tempDIR, "main.go")))
-	require.Contains(t, string(mainContent), "import \"fmt\"", "main.go should be formatted")
+	require.Contains(t, string(mainContent), "import \"fmt\"")
 
 	// Check that generated files were NOT formatted (still have formatting issues) - test verification uses require
 	pbContent := rese.V1(os.ReadFile(filepath.Join(tempDIR, "generated.pb.go")))
-	require.Contains(t, string(pbContent), "import\"fmt\"", "pb.go should NOT be formatted")
+	require.Contains(t, string(pbContent), "import\"fmt\"")
 }
 
 func TestGitCommit_AmendCommit(t *testing.T) {
@@ -211,5 +210,258 @@ func TestGitCommit_AmendCommit(t *testing.T) {
 	// Verify the commit was amended - test verification uses require
 	client := rese.P1(gogit.New(tempDIR))
 	status := rese.V1(client.Status())
-	require.Empty(t, status, "Working directory should be clean after amend")
+	require.Empty(t, status)
+}
+
+// setupTestRepoWithRemote creates a test repo with git remote configured
+// Environment setup must succeed, so we use rese/must for all operations
+func setupTestRepoWithRemote(remoteURL string) (string, func()) {
+	tempDIR, cleanup := setupTestRepo()
+
+	// Add remote to the repository - must succeed
+	execConfig := osexec.NewExecConfig().WithPath(tempDIR)
+	rese.V1(execConfig.Exec("git", "remote", "add", "origin", remoteURL))
+
+	return tempDIR, cleanup
+}
+
+// createTestConfig creates a temporary config file for testing
+// Environment setup must succeed, so we use rese/must for all operations
+func createTestConfig(tempDIR string, config *CommitConfig) string {
+	configPath := filepath.Join(tempDIR, "go-commit-config.json")
+	configData := rese.V1(json.Marshal(config))
+	must.Done(os.WriteFile(configPath, configData, 0644))
+	return configPath
+}
+
+func TestMatchPattern_ExactMatch(t *testing.T) {
+	pattern := "git@github.com:user/repo.git"
+	remoteURL := "git@github.com:user/repo.git"
+
+	score := utils.MatchRemotePattern(pattern, remoteURL)
+	require.Equal(t, 28, score)
+}
+
+func TestMatchPattern_WildcardMatch(t *testing.T) {
+	pattern := "git@github.com:*"
+	remoteURL := "git@github.com:user/repo.git"
+
+	score := utils.MatchRemotePattern(pattern, remoteURL)
+	require.Greater(t, score, 0)
+	require.Less(t, score, 24)
+}
+
+func TestMatchPattern_NoMatch(t *testing.T) {
+	pattern := "git@gitlab.com:*"
+	remoteURL := "git@github.com:user/repo.git"
+
+	score := utils.MatchRemotePattern(pattern, remoteURL)
+	require.Equal(t, -1, score)
+}
+
+func TestMatchPattern_WildcardSpecificity(t *testing.T) {
+	remoteURL := "git@github.com:user/repo.git"
+
+	// More specific pattern should get higher score
+	specificPattern := "git@github.com:user/*"
+	generalPattern := "git@github.com:*"
+
+	specificScore := utils.MatchRemotePattern(specificPattern, remoteURL)
+	generalScore := utils.MatchRemotePattern(generalPattern, remoteURL)
+
+	require.Greater(t, specificScore, generalScore)
+}
+
+func TestCommitConfig_MatchSignature_ExactMatch(t *testing.T) {
+	config := &CommitConfig{
+		Signatures: []SignatureConfig{
+			{
+				Name:           "exact-match",
+				Username:       "exact-user",
+				Eddress:        "exact@example.com",
+				RemotePatterns: []string{"git@github.com:user/repo.git"},
+			},
+			{
+				Name:           "wildcard-match",
+				Username:       "wildcard-user",
+				Eddress:        "wildcard@example.com",
+				RemotePatterns: []string{"git@github.com:*"},
+			},
+		},
+	}
+
+	signature := config.MatchSignature("git@github.com:user/repo.git")
+	require.NotNil(t, signature)
+	require.Equal(t, "exact-match", signature.Name)
+	require.Equal(t, "exact-user", signature.Username)
+}
+
+func TestCommitConfig_MatchSignature_WildcardMatch(t *testing.T) {
+	config := &CommitConfig{
+		Signatures: []SignatureConfig{
+			{
+				Name:           "github-match",
+				Username:       "github-user",
+				Eddress:        "github@example.com",
+				RemotePatterns: []string{"git@github.com:*"},
+			},
+		},
+	}
+
+	signature := config.MatchSignature("git@github.com:different/repo.git")
+	require.NotNil(t, signature)
+	require.Equal(t, "github-match", signature.Name)
+	require.Equal(t, "github-user", signature.Username)
+}
+
+func TestCommitConfig_MatchSignature_NoMatch(t *testing.T) {
+	config := &CommitConfig{
+		Signatures: []SignatureConfig{
+			{
+				Name:           "github-match",
+				Username:       "github-user",
+				Eddress:        "github@example.com",
+				RemotePatterns: []string{"git@github.com:*"},
+			},
+		},
+	}
+
+	signature := config.MatchSignature("git@gitlab.com:user/repo.git")
+	require.Nil(t, signature)
+}
+
+func TestCommitConfig_MatchSignature_Priority(t *testing.T) {
+	config := &CommitConfig{
+		Signatures: []SignatureConfig{
+			{
+				Name:           "general-github",
+				Username:       "general-user",
+				Eddress:        "general@example.com",
+				RemotePatterns: []string{"git@github.com:*"},
+			},
+			{
+				Name:           "specific-user",
+				Username:       "specific-user",
+				Eddress:        "specific@example.com",
+				RemotePatterns: []string{"git@github.com:specific/*"},
+			},
+		},
+	}
+
+	// More specific pattern should win
+	signature := config.MatchSignature("git@github.com:specific/repo.git")
+	require.NotNil(t, signature)
+	require.Equal(t, "specific-user", signature.Name)
+}
+
+func TestLoadConfig_FileExists(t *testing.T) {
+	tempDIR := rese.V1(os.MkdirTemp("", "config-test-*"))
+	defer func() { _ = os.RemoveAll(tempDIR) }()
+
+	// Change to temp DIR so config is found
+	originalDir := rese.V1(os.Getwd())
+	defer func() { must.Done(os.Chdir(originalDir)) }()
+	must.Done(os.Chdir(tempDIR))
+
+	testConfig := &CommitConfig{
+		Signatures: []SignatureConfig{
+			{
+				Name:           "test-signature-info",
+				Username:       "test-user",
+				Eddress:        "test@example.com",
+				RemotePatterns: []string{"git@github.com:*"},
+			},
+		},
+	}
+
+	configPath := createTestConfig(tempDIR, testConfig)
+
+	config := LoadConfig(configPath)
+	require.Len(t, config.Signatures, 1)
+	require.Equal(t, "test-signature-info", config.Signatures[0].Name)
+}
+
+func TestLoadConfig_NoFileFound(t *testing.T) {
+	tempDIR := rese.V1(os.MkdirTemp("", "config-test-*"))
+	defer func() { _ = os.RemoveAll(tempDIR) }()
+
+	nonExistentPath := filepath.Join(tempDIR, "non-existent-config.json")
+
+	tests.ExpectPanic(t, func() {
+		config := LoadConfig(nonExistentPath)
+		must.Full(config)
+	})
+}
+
+func TestGetSignatureConfig_WithRemoteMatching(t *testing.T) {
+	tempDIR, cleanup := setupTestRepoWithRemote("git@github.com:user/repo.git")
+	defer cleanup()
+
+	testConfig := &CommitConfig{
+		Signatures: []SignatureConfig{
+			{
+				Name:           "github-signature-info",
+				Username:       "github-user",
+				Eddress:        "github@example.com",
+				RemotePatterns: []string{"git@github.com:*"},
+			},
+		},
+	}
+
+	configPath := createTestConfig(tempDIR, testConfig)
+
+	signature, err := GetSignatureConfig(configPath, tempDIR)
+
+	require.NoError(t, err)
+	require.NotNil(t, signature)
+	require.Equal(t, "github-user", signature.Username)
+	require.Equal(t, "github@example.com", signature.Eddress)
+}
+
+func TestGetSignatureConfig_FlagOverride(t *testing.T) {
+	tempDIR, cleanup := setupTestRepoWithRemote("git@github.com:user/repo.git")
+	defer cleanup()
+
+	testConfig := &CommitConfig{
+		Signatures: []SignatureConfig{
+			{
+				Name:           "github-signature-info",
+				Username:       "github-user",
+				Eddress:        "github@example.com",
+				RemotePatterns: []string{"git@github.com:*"},
+			},
+		},
+	}
+
+	configPath := createTestConfig(tempDIR, testConfig)
+
+	signature, err := GetSignatureConfig(configPath, tempDIR)
+
+	require.NoError(t, err)
+	require.NotNil(t, signature)
+	require.Equal(t, "github-user", signature.Username)
+	require.Equal(t, "github@example.com", signature.Eddress)
+}
+
+func TestGetSignatureConfig_NoMatchReturnsNil(t *testing.T) {
+	tempDIR, cleanup := setupTestRepoWithRemote("git@unknown.com:user/repo.git")
+	defer cleanup()
+
+	testConfig := &CommitConfig{
+		Signatures: []SignatureConfig{
+			{
+				Name:           "github-signature-info",
+				Username:       "github-user",
+				Eddress:        "github@example.com",
+				RemotePatterns: []string{"git@github.com:*"},
+			},
+		},
+	}
+
+	configPath := createTestConfig(tempDIR, testConfig)
+
+	signature, err := GetSignatureConfig(configPath, tempDIR)
+
+	require.NoError(t, err)
+	require.Nil(t, signature)
 }

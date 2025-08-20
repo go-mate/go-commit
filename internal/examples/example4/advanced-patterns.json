@@ -1,0 +1,43 @@
+{
+  "signatures": [
+    {
+      "name": "exact-repo-match",
+      "username": "diana.lead",
+      "eddress": "diana.lead@critical-project.com",
+      "remotePatterns": [
+        "git@github.com:company/critical-project.git",
+        "https://github.com/company/critical-project.git"
+      ]
+    },
+    {
+      "name": "team-specific",
+      "username": "diana.dev",
+      "eddress": "diana@company.com",
+      "remotePatterns": [
+        "git@github.com:company/team-alpha/*",
+        "git@github.com:company/team-beta/*",
+        "https://github.com/company/team-alpha/*",
+        "https://github.com/company/team-beta/*"
+      ]
+    },
+    {
+      "name": "multi-subdomain",
+      "username": "diana.ops",
+      "eddress": "diana.ops@multi-env.com",
+      "remotePatterns": [
+        "git@*.multi-env.com:*",
+        "https://*.multi-env.com/*",
+        "git@dev.*.internal:*",
+        "git@staging.*.internal:*"
+      ]
+    },
+    {
+      "name": "protocol-flexible",
+      "username": "diana",
+      "eddress": "diana@anywhere.dev",
+      "remotePatterns": [
+        "*"
+      ]
+    }
+  ]
+}

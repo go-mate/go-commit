@@ -1,22 +1,30 @@
-// Package commitmate: Core Git commit automation engine with Go formatting capabilities
-// Provides intelligent commit workflow with auto Go source code formatting
-// Handles staging, formatting, committing, and amend operations seamlessly
+// Package commitmate: Advanced Git commit automation engine with intelligent Go formatting
+// Features smart commit workflows with auto Go source code formatting and remote-based signature-info selection
+// Provides seamless staging, formatting, committing, and amend operations with configuration-driven signatures
+// Supports wildcard pattern matching for Git remote URLs to auto-select appropriate commit signatures
 //
-// commitmate: 带有 Go 格式化功能的核心 Git 提交自动化引擎
-// 提供智能提交工作流程，带有自动 Go 源代码格式化
-// 无缝处理暂存、格式化、提交和 amend 操作
+// commitmate: 高级 Git 提交自动化引擎，带有智能 Go 格式化功能
+// 具有智能提交工作流程，包含自动 Go 源代码格式化和基于远程的身份选择
+// 提供无缝的暂存、格式化、提交和 amend 操作，支持配置驱动的签名
+// 支持 Git 远程 URL 的通配符模式匹配，自动选择合适的提交签名
 package commitmate
 
 import (
+	"encoding/json"
+	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/go-mate/go-commit/internal/utils"
 	"github.com/go-xlan/gogit"
 	"github.com/go-xlan/gogit/gogitassist"
 	"github.com/go-xlan/gogit/gogitchange"
 	"github.com/yyle88/erero"
 	"github.com/yyle88/formatgo"
+	"github.com/yyle88/must"
 	"github.com/yyle88/neatjson/neatjsons"
+	"github.com/yyle88/osexistpath/osmustexist"
+	"github.com/yyle88/rese"
 	"github.com/yyle88/zaplog"
 	"go.uber.org/zap"
 )
@@ -209,6 +217,145 @@ func FormatChangedGoFiles(projectRoot string, client *gogit.Client, allowFormat 
 		return erero.Wro(err)
 	}
 	return nil
+}
+
+// SignatureConfig represents a Git signature configuration with advanced pattern matching
+// Maps Git remote URL patterns to corresponding author username and email settings
+// Supports sophisticated wildcard matching for flexible remote pattern definitions
+// Enables automatic signature-info switching based on repository remote configurations
+//
+// SignatureConfig 代表具有高级模式匹配的 Git 签名配置
+// 将 Git 远程 URL 模式映射到相应的作者用户名和邮箱设置
+// 支持复杂的通配符匹配以实现灵活的远程模式定义
+// 基于仓库远程配置实现自动身份切换
+type SignatureConfig struct {
+	Name           string   `json:"name"`           // Config name for reference // 配置名称用于引用
+	Username       string   `json:"username"`       // Git username for commits // 用于提交的 Git 用户名
+	Eddress        string   `json:"eddress"`        // Git email for commits // 用于提交的 Git 邮箱
+	RemotePatterns []string `json:"remotePatterns"` // Remote URL patterns (supports wildcards) // 远程 URL 模式（支持通配符）
+}
+
+// CommitConfig represents the comprehensive configuration system for go-commit tool
+// Contains intelligent signature mappings for automated Git commit operations
+// Enables automatic signature selection based on Git remote URL pattern matching
+// Supports priority-based matching with wildcard patterns for enterprise and personal workflows
+//
+// CommitConfig 代表 go-commit 工具的全面配置系统
+// 包含用于自动化 Git 提交操作的智能签名映射
+// 基于 Git 远程 URL 模式匹配实现自动签名选择
+// 支持基于优先级的通配符模式匹配，适用于企业和个人工作流程
+type CommitConfig struct {
+	Signatures []SignatureConfig `json:"signatures"` // List of configured signatures // 配置的签名列表
+}
+
+// LoadConfig loads the go-commit configuration from the specified file path
+// Reads, validates, and parses the JSON configuration file with signature mappings
+// Utilizes osmustexist for file validation and rese/must for robust error handling
+// Returns fully loaded configuration ready for signature matching operations
+//
+// LoadConfig 从指定文件路径加载 go-commit 配置
+// 读取、验证并解析包含签名映射的 JSON 配置文件
+// 使用 osmustexist 进行文件验证和 rese/must 进行强健的错误处理
+// 返回完全加载的配置，准备进行签名匹配操作
+func LoadConfig(configPath string) *CommitConfig {
+	data := rese.A1(os.ReadFile(osmustexist.FILE(configPath)))
+
+	// Parse JSON configuration
+	// 解析 JSON 配置
+	var config CommitConfig
+	must.Done(json.Unmarshal(data, &config))
+
+	zaplog.SUG.Debugln("loaded config from:", configPath)
+	return &config
+}
+
+// MatchSignature finds the optimal signature configuration for the specified remote URL
+// Employs sophisticated pattern matching with wildcards and score-based priority selection
+// Evaluates all configured signature patterns and returns the highest-scoring match
+// Returns the best matched signature or nil if no patterns match the remote URL
+//
+// MatchSignature 为指定的远程 URL 找到最佳的签名配置
+// 采用复杂的通配符模式匹配和基于评分的优先级选择
+// 评估所有配置的签名模式并返回得分最高的匹配
+// 返回最佳匹配的签名，如果没有模式匹配远程 URL 则返回 nil
+func (config *CommitConfig) MatchSignature(remoteURL string) *SignatureConfig {
+	var bestMatch *SignatureConfig
+	bestMatchScore := -1
+
+	// Iterate through all configured signatures
+	// 遍历所有配置的签名
+	for i := range config.Signatures {
+		signature := &config.Signatures[i]
+
+		// Check each remote pattern for this signature
+		// 检查此签名的每个远程模式
+		for _, pattern := range signature.RemotePatterns {
+			score := utils.MatchRemotePattern(pattern, remoteURL)
+			if score > bestMatchScore {
+				bestMatchScore = score
+				bestMatch = signature
+			}
+		}
+	}
+
+	return bestMatch
+}
+
+// GetSignatureConfig intelligently resolves Git signature from configuration and repository remotes
+// Loads configuration, extracts Git remote URLs, and performs pattern-based signature matching
+// Prioritizes 'origin' remote but falls back to first available remote for signature resolution
+// Returns the optimal matched signature or nil if no suitable patterns match the remote configuration
+//
+// GetSignatureConfig 智能地从配置和仓库远程解析 Git 签名
+// 加载配置、提取 Git 远程 URL，并执行基于模式的签名匹配
+// 优先使用 'origin' 远程，但在签名解析时回退到第一个可用远程
+// 返回最佳匹配的签名，如果没有合适的模式匹配远程配置则返回 nil
+func GetSignatureConfig(configPath, projectRoot string) (*SignatureConfig, error) {
+	// Load configuration file
+	// 加载配置文件
+	config := LoadConfig(configPath)
+
+	// Get Git remote URL
+	// 获取 Git 远程 URL
+	client := rese.P1(gogit.New(projectRoot))
+
+	// 获取远程仓库地址，而且这里允许为空
+	remotes := rese.V1(client.Repo().Remotes())
+
+	// Use origin remote if available
+	// 如果可用则使用 origin 远程
+	var remoteURL string
+	if len(remotes) > 0 {
+		for _, remote := range remotes {
+			remoteConfig := remote.Config()
+			if remoteConfig.Name == "origin" && len(remoteConfig.URLs) > 0 {
+				remoteURL = remoteConfig.URLs[0]
+				break
+			}
+		}
+		// Fall back to first remote if no origin
+		// 如果没有 origin 则回退到第一个远程
+		if remoteURL == "" && len(remotes[0].Config().URLs) > 0 {
+			remoteURL = remotes[0].Config().URLs[0]
+		}
+	}
+
+	zaplog.SUG.Debugln("remote URL:", remoteURL)
+
+	// Find and return matching signature
+	// 查找并返回匹配的签名
+	if remoteURL != "" {
+		signature := config.MatchSignature(remoteURL)
+		if signature != nil {
+			zaplog.SUG.Debugln("matched signature:", signature.Name)
+			return signature, nil
+		}
+		return nil, nil
+	}
+
+	// No matching signature found
+	// 没有找到匹配的签名
+	return nil, nil
 }
 
 // DefaultAllowFormat is the default filter function for Go files formatting
