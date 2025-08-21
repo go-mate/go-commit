@@ -130,12 +130,12 @@ func GenerateToken()[]byte{
 		FormatGo: true,
 	}
 
-	signature := rese.V1(commitmate.GetSignatureConfig(configPath, tempDIR))
-	require.NotNil(t, signature)
-	require.Equal(t, "exact-repo-match", signature.Name)
+	config := commitmate.LoadConfig(configPath)
+	flags.ApplyProjectConfig(tempDIR, config)
 
-	flags.Username = signature.Username
-	flags.Eddress = signature.Eddress
+	// Verify project config was applied correctly
+	require.Equal(t, "diana.lead", flags.Username)
+	require.Equal(t, "diana.lead@critical-project.com", flags.Eddress)
 
 	must.Done(commitmate.GitCommit(tempDIR, flags))
 
@@ -171,12 +171,12 @@ func HealthCheck(w http.ResponseWriter,r*http.Request){
 		FormatGo: true,
 	}
 
-	signature := rese.V1(commitmate.GetSignatureConfig(configPath, tempDIR))
-	require.NotNil(t, signature)
-	require.Equal(t, "team-specific", signature.Name)
+	config := commitmate.LoadConfig(configPath)
+	flags.ApplyProjectConfig(tempDIR, config)
 
-	flags.Username = signature.Username
-	flags.Eddress = signature.Eddress
+	// Verify project config was applied correctly
+	require.Equal(t, "diana.dev", flags.Username)
+	require.Equal(t, "diana@company.com", flags.Eddress)
 
 	must.Done(commitmate.GitCommit(tempDIR, flags))
 
@@ -212,12 +212,12 @@ func DeployService(ctx context.Context,name string)error{
 		FormatGo: true,
 	}
 
-	signature := rese.V1(commitmate.GetSignatureConfig(configPath, tempDIR))
-	require.NotNil(t, signature)
-	require.Equal(t, "multi-subdomain", signature.Name)
+	config := commitmate.LoadConfig(configPath)
+	flags.ApplyProjectConfig(tempDIR, config)
 
-	flags.Username = signature.Username
-	flags.Eddress = signature.Eddress
+	// Verify project config was applied correctly
+	require.Equal(t, "diana.ops", flags.Username)
+	require.Equal(t, "diana.ops@multi-env.com", flags.Eddress)
 
 	must.Done(commitmate.GitCommit(tempDIR, flags))
 

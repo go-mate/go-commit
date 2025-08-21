@@ -16,7 +16,6 @@ import (
 	"github.com/yyle88/must"
 	"github.com/yyle88/neatjson/neatjsons"
 	"github.com/yyle88/rese"
-	"github.com/yyle88/tern/zerotern"
 	"github.com/yyle88/zaplog"
 )
 
@@ -44,13 +43,7 @@ func main() {
 			// Try to load signature config if config file is provided
 			// 如果提供了配置文件则尝试加载签名配置
 			if configPath != "" {
-				if signature := rese.V1(commitmate.GetSignatureConfig(configPath, projectRoot)); signature != nil {
-					zaplog.SUG.Debugln("Using signature config:", neatjsons.S(signature))
-					// Override flags with config if not explicitly set
-					// 如果没有明确设置则用配置覆盖标志
-					commitFlags.Username = zerotern.VV(signature.Username, commitFlags.Username)
-					commitFlags.Eddress = zerotern.VV(signature.Eddress, commitFlags.Eddress)
-				}
+				commitFlags.ApplyProjectConfig(projectRoot, commitmate.LoadConfig(configPath))
 			}
 
 			must.Done(commitmate.GitCommit(projectRoot, commitFlags))
@@ -68,6 +61,51 @@ func main() {
 
 	// 配置其它信息比如用户信息
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "", "path to go-commit configuration file")
+
+	// Add config subcommand for configuration management
+	// 添加配置子命令用于配置管理
+	configCmd := &cobra.Command{
+		Use:   "config",
+		Short: "Configuration management for go-commit",
+		Long:  "Manage go-commit configurations, validate existing configs, or generate templates",
+		Run: func(cmd *cobra.Command, args []string) {
+			// Validate config file path is provided
+			// 验证提供了配置文件路径
+			if configPath == "" {
+				zaplog.SUG.Panicln("missing config path. use -c flag")
+			}
+
+			zaplog.SUG.Debugln("config path:", configPath)
+
+			// Load and apply configuration
+			// 加载并应用配置
+			config := commitmate.LoadConfig(configPath)
+			zaplog.SUG.Debugln("config items:", neatjsons.S(config))
+
+			commitFlags.ApplyProjectConfig(projectRoot, config)
+			zaplog.SUG.Debugln("commit flags:", neatjsons.S(commitFlags))
+		},
+	}
+
+	// Add example subcommand to config for generating configuration template
+	// 在 config 命令下添加 example 子命令用于生成配置模板
+	configExampleCmd := &cobra.Command{
+		Use:   "example",
+		Short: "Generate configuration template for current project",
+		Long:  "Generate a go-commit configuration template based on current project's Git remote URL",
+		Run: func(cmd *cobra.Command, args []string) {
+			configTemplate := commitmate.GenerateConfigTemplate(projectRoot)
+
+			zaplog.SUG.Infoln("Generated configuration template:")
+			// Output template as formatted JSON
+			// 将模板输出为格式化的 JSON
+			zaplog.SUG.Infoln(neatjsons.S(configTemplate))
+			zaplog.SUG.Infoln("Save this template to a file (e.g., go-commit-config.json).")
+		},
+	}
+
+	configCmd.AddCommand(configExampleCmd)
+	rootCmd.AddCommand(configCmd)
 
 	// Execute the CLI application
 	// 执行 CLI 应用程序

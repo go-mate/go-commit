@@ -100,12 +100,12 @@ func ValidateToken(token string)bool{
 		FormatGo: true,
 	}
 
-	signature := rese.V1(commitmate.GetSignatureConfig(configPath, tempDIR))
-	require.NotNil(t, signature)
-	require.Equal(t, "client-alpha", signature.Name)
+	config := commitmate.LoadConfig(configPath)
+	flags.ApplyProjectConfig(tempDIR, config)
 
-	flags.Username = signature.Username
-	flags.Eddress = signature.Eddress
+	// Verify project config was applied correctly
+	require.Equal(t, "charlie.contractor", flags.Username)
+	require.Equal(t, "charlie@client-alpha.com", flags.Eddress)
 
 	must.Done(commitmate.GitCommit(tempDIR, flags))
 
@@ -144,12 +144,12 @@ func main(){
 		FormatGo: true,
 	}
 
-	signature := rese.V1(commitmate.GetSignatureConfig(configPath, tempDIR))
-	require.NotNil(t, signature)
-	require.Equal(t, "personal-projects", signature.Name)
+	config := commitmate.LoadConfig(configPath)
+	flags.ApplyProjectConfig(tempDIR, config)
 
-	flags.Username = signature.Username
-	flags.Eddress = signature.Eddress
+	// Verify project config was applied correctly
+	require.Equal(t, "charlie", flags.Username)
+	require.Equal(t, "charlie.freelancer@protonmail.com", flags.Eddress)
 
 	must.Done(commitmate.GitCommit(tempDIR, flags))
 
@@ -190,12 +190,12 @@ func NewArchitecture()Architecture{
 		FormatGo: true,
 	}
 
-	signature := rese.V1(commitmate.GetSignatureConfig(configPath, tempDIR))
-	require.NotNil(t, signature)
-	require.Equal(t, "consulting-work", signature.Name)
+	config := commitmate.LoadConfig(configPath)
+	flags.ApplyProjectConfig(tempDIR, config)
 
-	flags.Username = signature.Username
-	flags.Eddress = signature.Eddress
+	// Verify project config was applied correctly
+	require.Equal(t, "consulting-charlie", flags.Username)
+	require.Equal(t, "hello@charlie-consulting.dev", flags.Eddress)
 
 	must.Done(commitmate.GitCommit(tempDIR, flags))
 

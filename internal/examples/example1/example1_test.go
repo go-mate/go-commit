@@ -103,16 +103,15 @@ func main() {
 		FormatGo: true,
 	}
 
-	// Execute commit with signature config
-	// 使用签名配置执行提交
-	signature := rese.V1(commitmate.GetSignatureConfig(configPath, tempDIR))
-	require.NotNil(t, signature)
-	require.Equal(t, "personal-github", signature.Name)
+	// Apply project config to commit flags
+	// 将项目配置应用到提交标志
+	config := commitmate.LoadConfig(configPath)
+	flags.ApplyProjectConfig(tempDIR, config)
 
-	// Apply signature to commit flags
-	// 将签名应用到提交标志
-	flags.Username = signature.Username
-	flags.Eddress = signature.Eddress
+	// Verify config was applied correctly
+	// 验证配置被正确应用
+	require.Equal(t, "alice", flags.Username)
+	require.Equal(t, "alice.dev@gmail.com", flags.Eddress)
 
 	// Perform the commit
 	// 执行提交

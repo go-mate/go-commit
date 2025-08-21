@@ -79,12 +79,12 @@ func ProcessData(ctx context.Context)error{
 		FormatGo: true,
 	}
 
-	signature := rese.V1(commitmate.GetSignatureConfig(configPath, tempDIR))
-	require.NotNil(t, signature)
-	require.Equal(t, "work-projects", signature.Name)
+	config := commitmate.LoadConfig(configPath)
+	flags.ApplyProjectConfig(tempDIR, config)
 
-	flags.Username = signature.Username
-	flags.Eddress = signature.Eddress
+	// Verify project config was applied correctly
+	require.Equal(t, "bob.smith", flags.Username)
+	require.Equal(t, "bob.smith@company.com", flags.Eddress)
 
 	must.Done(commitmate.GitCommit(tempDIR, flags))
 
@@ -126,12 +126,12 @@ func main(){
 		FormatGo: true,
 	}
 
-	signature := rese.V1(commitmate.GetSignatureConfig(configPath, tempDIR))
-	require.NotNil(t, signature)
-	require.Equal(t, "personal-github", signature.Name)
+	config := commitmate.LoadConfig(configPath)
+	flags.ApplyProjectConfig(tempDIR, config)
 
-	flags.Username = signature.Username
-	flags.Eddress = signature.Eddress
+	// Verify project config was applied correctly
+	require.Equal(t, "bob-dev", flags.Username)
+	require.Equal(t, "bob.personal@gmail.com", flags.Eddress)
 
 	must.Done(commitmate.GitCommit(tempDIR, flags))
 

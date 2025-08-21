@@ -29,7 +29,7 @@ func setupTestRepo() (string, func()) {
 
 	// Create initial commit to make it a valid repo - must succeed
 	testFile := filepath.Join(tempDIR, "README.md")
-	must.Done(os.WriteFile(testFile, []byte("# Test Repository\n"), 0644))
+	must.Done(os.WriteFile(testFile, []byte("# Test Repo\n"), 0644))
 
 	// Add and commit initial file - must succeed
 	rese.V1(execConfig.Exec("git", "add", "."))
@@ -274,14 +274,14 @@ func TestMatchPattern_WildcardSpecificity(t *testing.T) {
 
 func TestCommitConfig_MatchSignature_ExactMatch(t *testing.T) {
 	config := &CommitConfig{
-		Signatures: []SignatureConfig{
-			{
+		Signatures: []*SignatureConfig{
+			&SignatureConfig{
 				Name:           "exact-match",
 				Username:       "exact-user",
 				Eddress:        "exact@example.com",
 				RemotePatterns: []string{"git@github.com:user/repo.git"},
 			},
-			{
+			&SignatureConfig{
 				Name:           "wildcard-match",
 				Username:       "wildcard-user",
 				Eddress:        "wildcard@example.com",
@@ -298,8 +298,8 @@ func TestCommitConfig_MatchSignature_ExactMatch(t *testing.T) {
 
 func TestCommitConfig_MatchSignature_WildcardMatch(t *testing.T) {
 	config := &CommitConfig{
-		Signatures: []SignatureConfig{
-			{
+		Signatures: []*SignatureConfig{
+			&SignatureConfig{
 				Name:           "github-match",
 				Username:       "github-user",
 				Eddress:        "github@example.com",
@@ -316,8 +316,8 @@ func TestCommitConfig_MatchSignature_WildcardMatch(t *testing.T) {
 
 func TestCommitConfig_MatchSignature_NoMatch(t *testing.T) {
 	config := &CommitConfig{
-		Signatures: []SignatureConfig{
-			{
+		Signatures: []*SignatureConfig{
+			&SignatureConfig{
 				Name:           "github-match",
 				Username:       "github-user",
 				Eddress:        "github@example.com",
@@ -332,8 +332,8 @@ func TestCommitConfig_MatchSignature_NoMatch(t *testing.T) {
 
 func TestCommitConfig_MatchSignature_Priority(t *testing.T) {
 	config := &CommitConfig{
-		Signatures: []SignatureConfig{
-			{
+		Signatures: []*SignatureConfig{
+			&SignatureConfig{
 				Name:           "general-github",
 				Username:       "general-user",
 				Eddress:        "general@example.com",
@@ -364,8 +364,8 @@ func TestLoadConfig_FileExists(t *testing.T) {
 	must.Done(os.Chdir(tempDIR))
 
 	testConfig := &CommitConfig{
-		Signatures: []SignatureConfig{
-			{
+		Signatures: []*SignatureConfig{
+			&SignatureConfig{
 				Name:           "test-signature-info",
 				Username:       "test-user",
 				Eddress:        "test@example.com",
@@ -393,13 +393,15 @@ func TestLoadConfig_NoFileFound(t *testing.T) {
 	})
 }
 
-func TestGetSignatureConfig_WithRemoteMatching(t *testing.T) {
+func TestApplyProjectConfig_WithRemoteMatching(t *testing.T) {
+	// 1. 立足项目 - 设置项目根目录
 	tempDIR, cleanup := setupTestRepoWithRemote("git@github.com:user/repo.git")
 	defer cleanup()
 
+	// 2. 环境配置 - 创建测试配置
 	testConfig := &CommitConfig{
-		Signatures: []SignatureConfig{
-			{
+		Signatures: []*SignatureConfig{
+			&SignatureConfig{
 				Name:           "github-signature-info",
 				Username:       "github-user",
 				Eddress:        "github@example.com",
@@ -408,23 +410,28 @@ func TestGetSignatureConfig_WithRemoteMatching(t *testing.T) {
 		},
 	}
 
-	configPath := createTestConfig(tempDIR, testConfig)
+	// 3. 创建 flags - 用户的提交标志
+	flags := &CommitFlags{
+		Message: "test commit",
+	}
 
-	signature, err := GetSignatureConfig(configPath, tempDIR)
+	// 4. 读取配置并修饰 flags
+	flags.ApplyProjectConfig(tempDIR, LoadConfig(createTestConfig(tempDIR, testConfig)))
 
-	require.NoError(t, err)
-	require.NotNil(t, signature)
-	require.Equal(t, "github-user", signature.Username)
-	require.Equal(t, "github@example.com", signature.Eddress)
+	// 5. 检查结果 - 验证最终状态
+	require.Equal(t, "github-user", flags.Username)
+	require.Equal(t, "github@example.com", flags.Eddress)
 }
 
-func TestGetSignatureConfig_FlagOverride(t *testing.T) {
+func TestApplyProjectConfig_ConfigFlagOverride(t *testing.T) {
+	// 1. 立足项目 - 设置项目根目录
 	tempDIR, cleanup := setupTestRepoWithRemote("git@github.com:user/repo.git")
 	defer cleanup()
 
+	// 2. 环境配置 - 创建测试配置
 	testConfig := &CommitConfig{
-		Signatures: []SignatureConfig{
-			{
+		Signatures: []*SignatureConfig{
+			&SignatureConfig{
 				Name:           "github-signature-info",
 				Username:       "github-user",
 				Eddress:        "github@example.com",
@@ -433,35 +440,16 @@ func TestGetSignatureConfig_FlagOverride(t *testing.T) {
 		},
 	}
 
-	configPath := createTestConfig(tempDIR, testConfig)
-
-	signature, err := GetSignatureConfig(configPath, tempDIR)
-
-	require.NoError(t, err)
-	require.NotNil(t, signature)
-	require.Equal(t, "github-user", signature.Username)
-	require.Equal(t, "github@example.com", signature.Eddress)
-}
-
-func TestGetSignatureConfig_NoMatchReturnsNil(t *testing.T) {
-	tempDIR, cleanup := setupTestRepoWithRemote("git@unknown.com:user/repo.git")
-	defer cleanup()
-
-	testConfig := &CommitConfig{
-		Signatures: []SignatureConfig{
-			{
-				Name:           "github-signature-info",
-				Username:       "github-user",
-				Eddress:        "github@example.com",
-				RemotePatterns: []string{"git@github.com:*"},
-			},
-		},
+	// 3. 创建 flags - 用户的提交标志
+	flags := &CommitFlags{
+		Message:  "test commit",
+		Username: "override-user", // Pre-set username will be overridden by config
 	}
 
-	configPath := createTestConfig(tempDIR, testConfig)
+	// 4. 读取配置并修饰 flags
+	flags.ApplyProjectConfig(tempDIR, LoadConfig(createTestConfig(tempDIR, testConfig)))
 
-	signature, err := GetSignatureConfig(configPath, tempDIR)
-
-	require.NoError(t, err)
-	require.Nil(t, signature)
+	// 5. 检查结果 - 验证最终状态
+	require.Equal(t, "github-user", flags.Username)       // Config value overrides existing flag
+	require.Equal(t, "github@example.com", flags.Eddress) // Config value applied to empty field
 }

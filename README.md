@@ -1,15 +1,20 @@
 # go-commit
 
-Smart Git commit tool with auto Go changed code formatting capabilities.
+Quick Git commit tool with auto Go changed code formatting capabilities.
 
+---
+
+## CHINESE README
+
+[中文说明](README.zh.md)
 
 ## Key Features
 
-🎯 **Smart Commit Automation**: Intelligent staging, formatting, and committing with amend support  
+🎯 **Quick Commit Automation**: Intelligent staging, formatting, and committing with amend support  
 ⚡ **Auto Go Formatting**: Selective formatting of changed Go files with generated file exclusion  
 🔄 **Signature-info Management**: Automatic Git signature selection based on remote URL patterns  
 🌍 **Wildcard Patterns**: Sophisticated pattern matching for complex enterprise workflows  
-📋 **Configuration-Driven**: JSON-based configuration with priority-based signature matching  
+📋 **Configuration-Driven**: JSON-based configuration with priority-based signature matching
 
 ## Install
 
@@ -20,7 +25,7 @@ go install github.com/go-mate/go-commit/cmd/go-commit@latest
 ## Usage
 
 ```bash
-# Basic commit with Go formatting
+# Quick commit with Go formatting
 go-commit -m "some commit message" --format-go
 
 # With signature info
@@ -38,28 +43,51 @@ go-commit --amend --force -m "force amend message"
 
 ## Configuration
 
-Create `go-commit-config.json` in system:
+Using a configuration file is optional but enables advanced features like automatic signature switching based on the project's remote URL.
+
+To get started, you can generate a configuration template based on your current git remote:
+
+```bash
+# This creates a go-commit-config.json in your current directory
+go-commit config example
+```
+
+This file allows you to define signatures for different git remotes. It looks like this:
 
 ```json
 {
   "signatures": [
     {
-      "name": "work-github",
-      "username": "work-user", 
-      "eddress": "work@company.com",
-      "remotePatterns": ["git@github.company.com:*"]
+      "name": "work-github", "username": "work-user", "eddress": "work@company.com", "remotePatterns": [
+      "git@github.company.com:*"
+    ]
     },
     {
-      "name": "play-github",
-      "username": "play-user",
-      "eddress": "play@gmail.com", 
-      "remotePatterns": ["git@github.com:play-user/*"]
+      "name": "play-github", "username": "play-user", "eddress": "play@example.com", "remotePatterns": [
+      "git@github.com:play-user/*"
+    ]
     }
   ]
 }
 ```
 
-See [configuration examples](internal/examples/)
+Examples:
+
+- Project A with remote `git@github.company.com:team/project-a` → auto commits as work-user(work@company.com)
+- Project B with remote `git@github.com:play-user/project-b` → auto commits as play-user(play@example.com)
+
+This automatic switching makes multi-project workflow much more convenient.
+
+**Validate Configuration:**
+
+Once setting up your configuration, you can validate it:
+
+```bash
+# Check if config loads correctly and preview matched signature
+go-commit config -c /path/to/go-commit-config.json
+```
+
+More advanced use cases. See the [configuration examples](internal/examples/).
 
 ## Recommended Aliases
 
@@ -78,7 +106,10 @@ alias gca='go-commit --username=yourname --format-go --amend'
 gcm -m "add new feature"
 
 # Amend last commit
-gca -m "fix typo in commit message"
+gca
+
+# Change last commit
+gca -m "new commit message"
 
 # Force amend (dangerous - use with caution)
 gca -m "force update pushed to remote" --force
@@ -97,6 +128,7 @@ MIT License. See [LICENSE](LICENSE).
 Contributions are welcome! Report bugs, suggest features, and contribute code:
 
 **Issues and Ideas:**
+
 - 🐛 **Found a bug?** Open an issue on GitHub with reproduction steps
 - 💡 **Have a feature idea?** Create an issue to discuss the suggestion
 - 📖 **Documentation confusing?** Report it so we can improve
@@ -129,14 +161,14 @@ Please ensure tests pass and include relevant documentation updates.
 Welcome to contribute to this project by submitting pull requests and reporting issues.
 
 > If you find my projects valuable, please give some GitHub stars.
-> Share it with (golang) programming teammates and friends who might benefit from it.
-> 
+> Share it with (golang) programming teammates and friends.
+>
 > If you are writing tech blogs about development tools and workflows,
 > we would be glad to provide content writing support to help promote this project.
-> 
+>
 > We are committed to supporting open source and contributing to the (golang) ecosystem.
 > Feedback helps us build enhanced tools that serve (golang) developers.
-> 
+>
 > Working as a team we can make Git workflows more efficient and enjoyable.
 > May the coding experience become more pleasant with this package!
 

@@ -76,12 +76,12 @@ func main(){
 		FormatGo: true,
 	}
 
-	signature := rese.V1(commitmate.GetSignatureConfig(configPath, tempDIR))
-	require.NotNil(t, signature)
-	require.Equal(t, "main-identity", signature.Name)
+	config := commitmate.LoadConfig(configPath)
+	flags.ApplyProjectConfig(tempDIR, config)
 
-	flags.Username = signature.Username
-	flags.Eddress = signature.Eddress
+	// Verify project config was applied correctly
+	require.Equal(t, "developer", flags.Username)
+	require.Equal(t, "developer@example.com", flags.Eddress)
 
 	must.Done(commitmate.GitCommit(tempDIR, flags))
 
@@ -123,12 +123,12 @@ func CleanString(s string)string{
 		FormatGo: true,
 	}
 
-	signature := rese.V1(commitmate.GetSignatureConfig(configPath, tempDIR))
-	require.NotNil(t, signature)
-	require.Equal(t, "main-identity", signature.Name)
+	config := commitmate.LoadConfig(configPath)
+	flags.ApplyProjectConfig(tempDIR, config)
 
-	flags.Username = signature.Username
-	flags.Eddress = signature.Eddress
+	// Verify project config was applied correctly
+	require.Equal(t, "developer", flags.Username)
+	require.Equal(t, "developer@example.com", flags.Eddress)
 
 	must.Done(commitmate.GitCommit(tempDIR, flags))
 
@@ -169,12 +169,12 @@ func Default()Config{
 		FormatGo: true,
 	}
 
-	signature := rese.V1(commitmate.GetSignatureConfig(configPath, tempDIR))
-	require.NotNil(t, signature)
-	require.Equal(t, "main-identity", signature.Name)
+	config := commitmate.LoadConfig(configPath)
+	flags.ApplyProjectConfig(tempDIR, config)
 
-	flags.Username = signature.Username
-	flags.Eddress = signature.Eddress
+	// Verify project config was applied correctly
+	require.Equal(t, "developer", flags.Username)
+	require.Equal(t, "developer@example.com", flags.Eddress)
 
 	must.Done(commitmate.GitCommit(tempDIR, flags))
 
@@ -204,7 +204,7 @@ func TestExample5MinimalConfigAdvantages(t *testing.T) {
 		require.Equal(t, "developer@example.com", signature.Eddress)
 	}
 
-	// Verify simplicity - only one signature needed
+	// Verify simplicity - just one signature needed
 	require.Len(t, config.Signatures, 1)
 
 	// Verify universal coverage - single pattern covers everything
