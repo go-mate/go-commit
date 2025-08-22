@@ -95,8 +95,8 @@ More advanced use cases. See the [configuration examples](internal/examples/).
 # Quick commit with formatting
 alias gcm='go-commit --username=yourname --format-go'
 
-# Quick amend with formatting
-alias gca='go-commit --username=yourname --format-go --amend'
+# Quick amend with formatting (extends gcm)
+alias gca='gcm --amend'
 ```
 
 ### Usage Examples

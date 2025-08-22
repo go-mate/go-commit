@@ -95,8 +95,8 @@ go-commit config -c /path/to/go-commit-config.json
 # 快速提交并格式化
 alias gcm='go-commit --username=yourname --format-go'
 
-# 快速修改并格式化
-alias gca='go-commit --username=yourname --format-go --amend'
+# 快速追加提交并格式化（扩展 gcm）
+alias gca='gcm --amend'
 ```
 
 ### 使用示例

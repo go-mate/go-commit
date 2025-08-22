@@ -114,13 +114,6 @@ func GitCommit(projectRoot string, commitFlags *CommitFlags) error {
 		zaplog.SUG.Debugln(neatjsons.S(status))
 	}
 
-	// Final status check before commit
-	// 提交前的最终状态检查
-	status, err = client.Status()
-	if err != nil {
-		return erero.Wro(err)
-	}
-
 	// Exit immediately if no changes to commit
 	// 如果没有更改要提交则提前退出
 	if len(status) == 0 {
@@ -295,8 +288,31 @@ func LoadConfig(configPath string) *CommitConfig {
 	var config CommitConfig
 	must.Done(json.Unmarshal(data, &config))
 
+	// Validate loaded configuration
+	// 验证加载的配置
+	validateConfig(&config)
+
 	zaplog.SUG.Debugln("loaded config from:", configPath)
 	return &config
+}
+
+// validateConfig performs basic validation on the loaded configuration
+// Ensures signature configurations have required fields and valid patterns
+//
+// validateConfig 对加载的配置执行基本验证
+// 确保签名配置具有必需字段和有效模式
+func validateConfig(config *CommitConfig) {
+	for i, signature := range config.Signatures {
+		if signature.Username == "" {
+			zaplog.SUG.Warnf("signature[%d] missing username", i)
+		}
+		if signature.Eddress == "" {
+			zaplog.SUG.Warnf("signature[%d] missing eddress", i)
+		}
+		if len(signature.RemotePatterns) == 0 {
+			zaplog.SUG.Warnf("signature[%d] missing remote patterns", i)
+		}
+	}
 }
 
 // ResolveSignature resolves Git signature based on project repository remotes

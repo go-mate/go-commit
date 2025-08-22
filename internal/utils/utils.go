@@ -9,6 +9,8 @@
 // 为企业 Git 工作流自动化中的高性能模式匹配进行了优化
 package utils
 
+import "strings"
+
 // MatchRemotePattern calculates intelligent match score for pattern against remote URL
 // Implements advanced scoring system where score equals non-wildcard character count if matched
 // Returns -1 for no match, 0+ for various specificity levels of successful matching
@@ -64,6 +66,16 @@ func MatchRemotePattern(pattern, remoteURL string) int {
 // 实现高性能递归匹配算法，用于复杂 URL 模式
 // 如果 remoteURL 成功匹配指定的通配符模式则返回 true
 func matchGlob(remoteURL, pattern string) bool {
+	// Quick exact match check for performance
+	// 快速精确匹配检查以提升性能
+	if remoteURL == pattern {
+		return true
+	}
+	// No wildcard in pattern, must be exact match
+	// 模式中没有通配符，必须精确匹配
+	if !strings.Contains(pattern, "*") {
+		return false
+	}
 	return matchGlobRecursive([]rune(remoteURL), []rune(pattern))
 }
 
