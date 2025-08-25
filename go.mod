@@ -7,7 +7,7 @@ require (
 	github.com/go-xlan/gogit v0.0.16
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.9.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.0
 	github.com/yyle88/erero v1.0.23
 	github.com/yyle88/eroticgo v0.0.4
 	github.com/yyle88/formatgo v1.0.27

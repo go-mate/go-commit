@@ -115,19 +115,17 @@ gca -m "new commit message"
 gca -m "force update pushed to remote" --force
 ```
 
----
+<!-- TEMPLATE (EN) BEGIN: STANDARD PROJECT FOOTER -->
 
-## License
+## 📄 License
 
 MIT License. See [LICENSE](LICENSE).
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
 Contributions are welcome! Report bugs, suggest features, and contribute code:
-
-**Issues and Ideas:**
 
 - 🐛 **Found a bug?** Open an issue on GitHub with reproduction steps
 - 💡 **Have a feature idea?** Create an issue to discuss the suggestion
@@ -135,10 +133,15 @@ Contributions are welcome! Report bugs, suggest features, and contribute code:
 - 🚀 **Need new features?** Share your use cases to help us understand requirements
 - ⚡ **Performance issue?** Help us optimize by reporting slow operations
 - 🔧 **Configuration problem?** Ask questions about complex setups
+- 📢 **Follow project progress?** Watch the repo for new releases and features
 - 🌟 **Success stories?** Share how this package improved your workflow
 - 💬 **General feedback?** All suggestions and comments are welcome
 
-**Code Contributions:**
+---
+
+## 🔧 Development
+
+New code contributions, follow this process:
 
 1. **Fork**: Fork the repo on GitHub (using the webpage interface).
 2. **Clone**: Clone the forked project (`git clone https://github.com/yourname/repo-name.git`).
@@ -156,23 +159,20 @@ Please ensure tests pass and include relevant documentation updates.
 
 ---
 
-## Support
+## 🌟 Support
 
 Welcome to contribute to this project by submitting pull requests and reporting issues.
 
-> If you find my projects valuable, please give some GitHub stars.
-> Share it with (golang) programming teammates and friends.
->
-> If you are writing tech blogs about development tools and workflows,
-> we would be glad to provide content writing support to help promote this project.
->
-> We are committed to supporting open source and contributing to the (golang) ecosystem.
-> Feedback helps us build enhanced tools that serve (golang) developers.
->
-> Working as a team we can make Git workflows more efficient and enjoyable.
-> May the coding experience become more pleasant with this package!
+**Project Support:**
+
+- ⭐ **Give GitHub stars** if this project helps you
+- 🤝 **Share with teammates** and (golang) programming friends
+- 📝 **Write tech blogs** about development tools and workflows - we provide content writing support
+- 🌟 **Join the ecosystem** - committed to supporting open source and the (golang) development scene
 
 **Happy Coding with this package!** 🎉
+
+<!-- TEMPLATE (EN) END: STANDARD PROJECT FOOTER -->
 
 ---
 
