@@ -1,14 +1,23 @@
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/go-mate/go-commit/release.yml?branch=main&label=BUILD)](https://github.com/go-mate/go-commit/actions/workflows/release.yml?query=branch%3Amain)
+[![GoDoc](https://pkg.go.dev/badge/github.com/go-mate/go-commit)](https://pkg.go.dev/github.com/go-mate/go-commit)
+[![Coverage Status](https://img.shields.io/coveralls/github/go-mate/go-commit/main.svg)](https://coveralls.io/github/go-mate/go-commit?branch=main)
+[![Supported Go Versions](https://img.shields.io/badge/Go-1.22--1.25-lightgrey.svg)](https://go.dev/)
+[![GitHub Release](https://img.shields.io/github/release/go-mate/go-commit.svg)](https://github.com/go-mate/go-commit/releases)
+[![Go Report Card](https://goreportcard.com/badge/github.com/go-mate/go-commit)](https://goreportcard.com/report/github.com/go-mate/go-commit)
+
 # go-commit
 
 Quick Git commit tool with auto Go changed code formatting capabilities.
 
 ---
 
+<!-- TEMPLATE (EN) BEGIN: LANGUAGE NAVIGATION -->
 ## CHINESE README
 
 [中文说明](README.zh.md)
+<!-- TEMPLATE (EN) END: LANGUAGE NAVIGATION -->
 
-## Key Features
+## Main Features
 
 🎯 **Quick Commit Automation**: Intelligent staging, formatting, and committing with amend support  
 ⚡ **Auto Go Formatting**: Selective formatting of changed Go files with generated file exclusion  
@@ -16,7 +25,7 @@ Quick Git commit tool with auto Go changed code formatting capabilities.
 🌍 **Wildcard Patterns**: Sophisticated pattern matching for complex enterprise workflows  
 📋 **Configuration-Driven**: JSON-based configuration with priority-based signature matching
 
-## Install
+## Installation
 
 ```bash
 go install github.com/go-mate/go-commit/cmd/go-commit@latest
@@ -116,6 +125,7 @@ gca -m "force update pushed to remote" --force
 ```
 
 <!-- TEMPLATE (EN) BEGIN: STANDARD PROJECT FOOTER -->
+<!-- VERSION 2025-09-06 04:53:24.895249 +0000 UTC -->
 
 ## 📄 License
 
@@ -130,12 +140,12 @@ Contributions are welcome! Report bugs, suggest features, and contribute code:
 - 🐛 **Found a bug?** Open an issue on GitHub with reproduction steps
 - 💡 **Have a feature idea?** Create an issue to discuss the suggestion
 - 📖 **Documentation confusing?** Report it so we can improve
-- 🚀 **Need new features?** Share your use cases to help us understand requirements
-- ⚡ **Performance issue?** Help us optimize by reporting slow operations
+- 🚀 **Need new features?** Share the use cases to help us understand requirements
+- ⚡ **Performance issue?** Help us optimize through reporting slow operations
 - 🔧 **Configuration problem?** Ask questions about complex setups
-- 📢 **Follow project progress?** Watch the repo for new releases and features
-- 🌟 **Success stories?** Share how this package improved your workflow
-- 💬 **General feedback?** All suggestions and comments are welcome
+- 📢 **Follow project progress?** Watch the repo to get new releases and features
+- 🌟 **Success stories?** Share how this package improved the workflow
+- 💬 **Feedback?** We welcome suggestions and comments
 
 ---
 
@@ -143,13 +153,13 @@ Contributions are welcome! Report bugs, suggest features, and contribute code:
 
 New code contributions, follow this process:
 
-1. **Fork**: Fork the repo on GitHub (using the webpage interface).
+1. **Fork**: Fork the repo on GitHub (using the webpage UI).
 2. **Clone**: Clone the forked project (`git clone https://github.com/yourname/repo-name.git`).
 3. **Navigate**: Navigate to the cloned project (`cd repo-name`)
 4. **Branch**: Create a feature branch (`git checkout -b feature/xxx`).
-5. **Code**: Implement your changes with comprehensive tests
+5. **Code**: Implement the changes with comprehensive tests
 6. **Testing**: (Golang project) Ensure tests pass (`go test ./...`) and follow Go code style conventions
-7. **Documentation**: Update documentation for user-facing changes and use meaningful commit messages
+7. **Documentation**: Update documentation to support client-facing changes and use significant commit messages
 8. **Stage**: Stage changes (`git add .`)
 9. **Commit**: Commit changes (`git commit -m "Add feature xxx"`) ensuring backward compatible code
 10. **Push**: Push to the branch (`git push origin feature/xxx`).
@@ -161,7 +171,7 @@ Please ensure tests pass and include relevant documentation updates.
 
 ## 🌟 Support
 
-Welcome to contribute to this project by submitting pull requests and reporting issues.
+Welcome to contribute to this project via submitting merge requests and reporting issues.
 
 **Project Support:**
 
@@ -170,7 +180,7 @@ Welcome to contribute to this project by submitting pull requests and reporting 
 - 📝 **Write tech blogs** about development tools and workflows - we provide content writing support
 - 🌟 **Join the ecosystem** - committed to supporting open source and the (golang) development scene
 
-**Happy Coding with this package!** 🎉
+**Have Fun Coding with this package!** 🎉
 
 <!-- TEMPLATE (EN) END: STANDARD PROJECT FOOTER -->
 

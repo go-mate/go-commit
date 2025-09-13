@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/go-mate/go-commit/internal/tests"
 	"github.com/go-mate/go-commit/internal/utils"
 	"github.com/go-xlan/gogit"
 	"github.com/stretchr/testify/require"
@@ -37,7 +36,7 @@ func setupTestRepo() (string, func()) {
 
 	// Return cleanup function
 	cleanup := func() {
-		_ = os.RemoveAll(tempDIR)
+		must.Done(os.RemoveAll(tempDIR))
 	}
 
 	return tempDIR, cleanup
@@ -356,7 +355,7 @@ func TestCommitConfig_MatchSignature_Priority(t *testing.T) {
 
 func TestLoadConfig_FileExists(t *testing.T) {
 	tempDIR := rese.V1(os.MkdirTemp("", "config-test-*"))
-	defer func() { _ = os.RemoveAll(tempDIR) }()
+	defer func() { must.Done(os.RemoveAll(tempDIR)) }()
 
 	// Change to temp DIR so config is found
 	originalDir := rese.V1(os.Getwd())
@@ -383,11 +382,11 @@ func TestLoadConfig_FileExists(t *testing.T) {
 
 func TestLoadConfig_NoFileFound(t *testing.T) {
 	tempDIR := rese.V1(os.MkdirTemp("", "config-test-*"))
-	defer func() { _ = os.RemoveAll(tempDIR) }()
+	defer func() { must.Done(os.RemoveAll(tempDIR)) }()
 
 	nonExistentPath := filepath.Join(tempDIR, "non-existent-config.json")
 
-	tests.ExpectPanic(t, func() {
+	require.Panics(t, func() {
 		config := LoadConfig(nonExistentPath)
 		must.Full(config)
 	})
@@ -452,4 +451,97 @@ func TestApplyProjectConfig_ConfigFlagOverride(t *testing.T) {
 	// 5. 检查结果 - 验证最终状态
 	require.Equal(t, "github-user", flags.Username)       // Config value overrides existing flag
 	require.Equal(t, "github@example.com", flags.Eddress) // Config value applied to empty field
+}
+
+func TestAutoSignFlag(t *testing.T) {
+	tempDIR, cleanup := setupTestRepo()
+	defer cleanup()
+
+	t.Run("AutoSign enabled fills empty username and eddress", func(t *testing.T) {
+		// Create a new file for commit - must succeed for test setup
+		// 创建用于提交的新文件 - 测试设置必须成功
+		newFile := filepath.Join(tempDIR, "test1.txt")
+		must.Done(os.WriteFile(newFile, []byte("test content 1"), 0644))
+
+		flags := &CommitFlags{
+			Username: "", // Empty username
+			Eddress:  "", // Empty eddress
+			Message:  "Test commit with AutoSign",
+			AutoSign: true, // Enable AutoSign
+		}
+
+		// This should work and fill username/eddress from git config (global or local)
+		// 这应该工作并从 git 配置填充用户名/邮箱（全局或本地）
+		require.NoError(t, GitCommit(tempDIR, flags))
+
+		// Verify that git log shows the correct author from git config
+		// 验证 git log 显示从 git 配置读取的正确作者
+		execConfig := osexec.NewExecConfig().WithPath(tempDIR)
+		authorName := rese.V1(execConfig.Exec("git", "log", "-1", "--pretty=format:%an"))
+		authorEmail := rese.V1(execConfig.Exec("git", "log", "-1", "--pretty=format:%ae"))
+
+		// Should not be empty since AutoSign should have filled from git config
+		// 不应该为空，因为 AutoSign 应该从 git 配置填充
+		require.NotEmpty(t, string(authorName))
+		require.NotEmpty(t, string(authorEmail))
+		require.NotEqual(t, "gogit", string(authorName)) // Should not be default gogit user
+	})
+
+	t.Run("AutoSign disabled keeps empty username and eddress", func(t *testing.T) {
+		// Create a new file for commit - must succeed for test setup
+		// 创建用于提交的新文件 - 测试设置必须成功
+		newFile := filepath.Join(tempDIR, "test2.txt")
+		must.Done(os.WriteFile(newFile, []byte("test content 2"), 0644))
+
+		flags := &CommitFlags{
+			Username: "", // Empty username
+			Eddress:  "", // Empty eddress
+			Message:  "Test commit without AutoSign",
+			AutoSign: false, // Disable AutoSign
+		}
+
+		// This should still work but use empty username/eddress for commit
+		// 这应该仍然工作但使用空的用户名/邮箱进行提交
+		require.NoError(t, GitCommit(tempDIR, flags))
+
+		// Verify that git log shows default gogit user (not from git config)
+		// 验证 git log 显示默认 gogit 用户（不是从 git 配置读取）
+		execConfig := osexec.NewExecConfig().WithPath(tempDIR)
+		authorName := rese.V1(execConfig.Exec("git", "log", "-1", "--pretty=format:%an"))
+		authorEmail := rese.V1(execConfig.Exec("git", "log", "-1", "--pretty=format:%ae"))
+
+		// Should be gogit default user since AutoSign is disabled
+		// 应该是 gogit 默认用户，因为 AutoSign 被禁用
+		require.Equal(t, "gogit", string(authorName))
+		require.Equal(t, "gogit@github.com/go-xlan/gogit", string(authorEmail))
+	})
+
+	t.Run("AutoSign enabled but username already provided", func(t *testing.T) {
+		// Create a new file for commit - must succeed for test setup
+		// 创建用于提交的新文件 - 测试设置必须成功
+		newFile := filepath.Join(tempDIR, "test3.txt")
+		must.Done(os.WriteFile(newFile, []byte("test content 3"), 0644))
+
+		flags := &CommitFlags{
+			Username: "Manual User",        // Already provided username
+			Eddress:  "manual@example.com", // Already provided eddress
+			Message:  "Test commit with existing info",
+			AutoSign: true, // Enable AutoSign but shouldn't override existing info
+		}
+
+		// Should use provided username/eddress instead of reading from git config
+		// 应该使用提供的用户名/邮箱而不是从 git 配置读取
+		require.NoError(t, GitCommit(tempDIR, flags))
+
+		// Verify that git log shows the manually provided user info (not from git config)
+		// 验证 git log 显示手动提供的用户信息（不是从 git 配置读取）
+		execConfig := osexec.NewExecConfig().WithPath(tempDIR)
+		authorName := rese.V1(execConfig.Exec("git", "log", "-1", "--pretty=format:%an"))
+		authorEmail := rese.V1(execConfig.Exec("git", "log", "-1", "--pretty=format:%ae"))
+
+		// Should use the manually provided info, not git config
+		// 应该使用手动提供的信息，而不是 git 配置
+		require.Equal(t, "Manual User", string(authorName))
+		require.Equal(t, "manual@example.com", string(authorEmail))
+	})
 }

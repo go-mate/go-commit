@@ -88,6 +88,7 @@ func createRootCommand(projectRoot string, commitFlags *commitmate.CommitFlags, 
 	rootCmd.PersistentFlags().StringVarP(&commitFlags.Eddress, "eddress", "e", "", "email address")
 	rootCmd.PersistentFlags().BoolVar(&commitFlags.NoCommit, "no-commit", false, "stage changes without committing")
 	rootCmd.PersistentFlags().BoolVar(&commitFlags.FormatGo, "format-go", false, "format changed go files")
+	rootCmd.PersistentFlags().BoolVar(&commitFlags.AutoSign, "auto-sign", false, "auto-use git config signing info when unset")
 	rootCmd.PersistentFlags().StringVarP(&appConfig.ConfigPath, "config", "c", "", "path to go-commit configuration file")
 
 	return rootCmd

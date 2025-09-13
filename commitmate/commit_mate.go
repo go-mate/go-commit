@@ -23,6 +23,7 @@ import (
 	"github.com/yyle88/formatgo"
 	"github.com/yyle88/must"
 	"github.com/yyle88/neatjson/neatjsons"
+	"github.com/yyle88/osexec"
 	"github.com/yyle88/osexistpath/osmustexist"
 	"github.com/yyle88/rese"
 	"github.com/yyle88/tern/zerotern"
@@ -45,6 +46,7 @@ type CommitFlags struct {
 	Eddress  string // Git author email address // Git 作者邮箱地址
 	NoCommit bool   // Stage changes without committing // 仅暂存更改而不提交
 	FormatGo bool   // Format changed Go files before commit // 提交前格式化已改变的 Go 文件
+	AutoSign bool   // Use Git config as fallback // 使用 Git 配置作为备选
 }
 
 // GitCommit performs the complete commit workflow with optional Go code formatting
@@ -134,6 +136,12 @@ func GitCommit(projectRoot string, commitFlags *CommitFlags) error {
 		Name:    commitFlags.Username,
 		Eddress: commitFlags.Eddress,
 		Message: commitFlags.Message,
+	}
+
+	// Fill empty username/eddress from Git config as fallback (if allowed)
+	// 从 Git 配置填充空的用户名/邮箱作为备选（如果允许）
+	if commitFlags.AutoSign {
+		useConfigSignInfo(projectRoot, commitInfo)
 	}
 
 	// Execute commit or amend based on flags
@@ -416,4 +424,44 @@ func DefaultAllowFormat(path string) bool {
 	// Allow formatting for all other Go files
 	// 允许格式化所有其他 Go 文件
 	return true
+}
+
+// useConfigSignInfo fills empty username/eddress fields from Git configuration
+// Uses "git config user.name" and "git config user.email" as fallback
+//
+// useConfigSignInfo 从 Git 配置填充空的用户名/邮箱字段
+// 使用 "git config user.name" 和 "git config user.email" 作为备选
+func useConfigSignInfo(projectRoot string, commitInfo *gogit.CommitInfo) {
+	// Only try to get Git config if username is empty
+	// 仅在用户名为空时才尝试获取 Git 配置
+	if commitInfo.Name == "" {
+		if gitUsername := getGitConfigValue(projectRoot, "user.name"); gitUsername != "" {
+			commitInfo.Name = gitUsername
+			zaplog.SUG.Debugln("using git config user.name:", gitUsername)
+		}
+	}
+
+	// Only try to get Git config if eddress is empty
+	// 仅在邮箱为空时才尝试获取 Git 配置
+	if commitInfo.Eddress == "" {
+		if gitEddress := getGitConfigValue(projectRoot, "user.email"); gitEddress != "" {
+			commitInfo.Eddress = gitEddress
+			zaplog.SUG.Debugln("using git config user.email:", gitEddress)
+		}
+	}
+}
+
+// getGitConfigValue retrieves a configuration value from Git config in the specified project DIR
+// Returns empty string if command fails or config key doesn't exist
+//
+// getGitConfigValue 从指定项目 DIR 的 Git 配置获取配置值
+// 如果命令失败或配置键不存在则返回空字符串
+func getGitConfigValue(projectRoot, key string) string {
+	execConfig := osexec.NewExecConfig().WithPath(projectRoot)
+	output, err := execConfig.Exec("git", "config", key)
+	if err != nil {
+		zaplog.SUG.Debugln("cannot get git config", key, ":", err)
+		return ""
+	}
+	return strings.TrimSpace(string(output))
 }

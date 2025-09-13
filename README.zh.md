@@ -1,12 +1,21 @@
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/go-mate/go-commit/release.yml?branch=main&label=BUILD)](https://github.com/go-mate/go-commit/actions/workflows/release.yml?query=branch%3Amain)
+[![GoDoc](https://pkg.go.dev/badge/github.com/go-mate/go-commit)](https://pkg.go.dev/github.com/go-mate/go-commit)
+[![Coverage Status](https://img.shields.io/coveralls/github/go-mate/go-commit/main.svg)](https://coveralls.io/github/go-mate/go-commit?branch=main)
+[![Supported Go Versions](https://img.shields.io/badge/Go-1.22--1.25-lightgrey.svg)](https://go.dev/)
+[![GitHub Release](https://img.shields.io/github/release/go-mate/go-commit.svg)](https://github.com/go-mate/go-commit/releases)
+[![Go Report Card](https://goreportcard.com/badge/github.com/go-mate/go-commit)](https://goreportcard.com/report/github.com/go-mate/go-commit)
+
 # go-commit
 
 快捷的 Git 提交工具，具备自动 Go 代码格式化功能。
 
 ---
 
+<!-- TEMPLATE (ZH) BEGIN: LANGUAGE NAVIGATION -->
 ## 英文文档
 
 [ENGLISH README](README.md)
+<!-- TEMPLATE (ZH) END: LANGUAGE NAVIGATION -->
 
 ## 核心特性
 
@@ -116,8 +125,9 @@ gca -m "修改提交信息" --force
 ```
 
 <!-- TEMPLATE (ZH) BEGIN: STANDARD PROJECT FOOTER -->
+<!-- VERSION 2025-09-06 04:53:24.895249 +0000 UTC -->
 
-## 📄 许可证
+## 📄 许可证类型
 
 MIT 许可证。详见 [LICENSE](LICENSE)。
 
@@ -135,7 +145,7 @@ MIT 许可证。详见 [LICENSE](LICENSE)。
 - 🔧 **配置困扰？** 询问复杂设置的相关问题
 - 📢 **关注进展？** 关注仓库以获取新版本和功能
 - 🌟 **成功案例？** 分享这个包如何改善工作流程
-- 💬 **意见反馈？** 欢迎所有建议和宝贵意见
+- 💬 **反馈意见？** 欢迎提出建议和意见
 
 ---
 
@@ -170,7 +180,7 @@ MIT 许可证。详见 [LICENSE](LICENSE)。
 - 📝 **撰写博客**关于开发工具和工作流程 - 我们提供写作支持
 - 🌟 **加入生态** - 致力于支持开源和（golang）开发场景
 
-**使用这个包快乐编程！** 🎉
+**使用这个包编程快乐！** 🎉
 
 <!-- TEMPLATE (ZH) END: STANDARD PROJECT FOOTER -->
 
