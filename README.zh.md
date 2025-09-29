@@ -1,13 +1,13 @@
 [![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/go-mate/go-commit/release.yml?branch=main&label=BUILD)](https://github.com/go-mate/go-commit/actions/workflows/release.yml?query=branch%3Amain)
 [![GoDoc](https://pkg.go.dev/badge/github.com/go-mate/go-commit)](https://pkg.go.dev/github.com/go-mate/go-commit)
 [![Coverage Status](https://img.shields.io/coveralls/github/go-mate/go-commit/main.svg)](https://coveralls.io/github/go-mate/go-commit?branch=main)
-[![Supported Go Versions](https://img.shields.io/badge/Go-1.22--1.25-lightgrey.svg)](https://go.dev/)
+[![Supported Go Versions](https://img.shields.io/badge/Go-1.25+-lightgrey.svg)](https://go.dev/)
 [![GitHub Release](https://img.shields.io/github/release/go-mate/go-commit.svg)](https://github.com/go-mate/go-commit/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-mate/go-commit)](https://goreportcard.com/report/github.com/go-mate/go-commit)
 
 # go-commit
 
-快捷的 Git 提交工具，具备自动 Go 代码格式化功能。
+快捷的 Git 提交应用，具备自动 Go 代码格式化功能。
 
 ---
 
@@ -23,7 +23,7 @@
 ⚡ **自动 Go 格式化**: 选择性格式化修改的 Go 文件，排除生成文件  
 🔄 **签名信息管理**: 基于远程 URL 模式的自动 Git 签名选择  
 🌍 **通配符模式**: 复杂企业工作流的高级模式匹配  
-📋 **配置驱动**: 基于 JSON 的配置，支持优先级签名匹配
+📋 **配置驱动**: 基于 JSON 的配置，支持评分式签名匹配
 
 ## 安装
 
@@ -52,16 +52,16 @@ go-commit --amend --force -m "force amend message"
 
 ## 配置
 
-使用配置文件是可选的，但它能让您使用更多高级功能，例如根据项目的远程URL自动切换签名。
+使用配置文件是自适应的，但它能让您使用更多高级功能，例如根据项目的远程URL自动切换签名。
 
-您可以根据当前项目的 Git 远程仓库来快速生成一份配置模板，以此开始：
+您可以根据当前项目的 Git 远程代码库来快速生成一份配置模板，以此开始：
 
 ```bash
-# 这会在当前目录下创建一个 go-commit-config.json 文件
+# 这会在当前文件夹下创建一个 go-commit-config.json 文件
 go-commit config example
 ```
 
-该文件允许您为不同的远程仓库定义签名，格式如下：
+该文件允许您为不同的远程代码库定义签名，格式如下：
 
 ```json
 {
@@ -124,8 +124,27 @@ gca -m "新的提交信息"
 gca -m "修改提交信息" --force
 ```
 
+### 高级使用示例
+
+```bash
+# 仅暂存更改而不提交（用于测试）
+go-commit --no-commit --format-go
+
+# 自动格式化 Go 文件并使用自动签名提交
+go-commit -m "改进代码格式" --format-go --auto-sign
+
+# 使用特定用户信息提交（覆盖配置）
+go-commit -u "张三" -e "zhangsan@company.com" -m "紧急修复" --format-go
+
+# 使用 mailbox 而非 eddress，语义更清晰
+go-commit --mailbox "developer@team.com" -m "功能更新" --format-go
+
+# 配置驱动的提交（基于远程自动选择签名）
+go-commit -c ~/go-commit-config.json -m "自动化提交" --format-go
+```
+
 <!-- TEMPLATE (ZH) BEGIN: STANDARD PROJECT FOOTER -->
-<!-- VERSION 2025-09-06 04:53:24.895249 +0000 UTC -->
+<!-- VERSION 2025-09-26 07:39:27.188023 +0000 UTC -->
 
 ## 📄 许可证类型
 
@@ -163,7 +182,7 @@ MIT 许可证。详见 [LICENSE](LICENSE)。
 8. **暂存**：暂存更改（`git add .`）
 9. **提交**：提交更改（`git commit -m "Add feature xxx"`）确保向后兼容的代码
 10. **推送**：推送到分支（`git push origin feature/xxx`）
-11. **PR**：在 GitHub 上打开 Pull Request（在 GitHub 网页上）并提供详细描述
+11. **PR**：在 GitHub 上打开 Merge Request（在 GitHub 网页上）并提供详细描述
 
 请确保测试通过并包含相关的文档更新。
 
@@ -171,7 +190,7 @@ MIT 许可证。详见 [LICENSE](LICENSE)。
 
 ## 🌟 项目支持
 
-非常欢迎通过提交 Pull Request 和报告问题来为此项目做出贡献。
+非常欢迎通过提交 Merge Request 和报告问题来为此项目做出贡献。
 
 **项目支持：**
 
@@ -180,7 +199,7 @@ MIT 许可证。详见 [LICENSE](LICENSE)。
 - 📝 **撰写博客**关于开发工具和工作流程 - 我们提供写作支持
 - 🌟 **加入生态** - 致力于支持开源和（golang）开发场景
 
-**使用这个包编程快乐！** 🎉
+**祝你用这个包编程愉快！** 🎉🎉🎉
 
 <!-- TEMPLATE (ZH) END: STANDARD PROJECT FOOTER -->
 

@@ -1,3 +1,10 @@
+// Configuration template testing for commitmate package
+// Tests configuration template generation functionality with various Git remote scenarios
+// Validates template creation for different repository configurations and edge cases
+//
+// commitmate 包的配置模板测试
+// 测试各种 Git 远程场景下的配置模板生成功能
+// 验证不同仓库配置和边界情况下的模板创建
 package commitmate
 
 import (
@@ -121,6 +128,11 @@ func TestGenerateConfigTemplateWithMultipleRemotes(t *testing.T) {
 	require.Equal(t, "git@github.com:myuser/*", signature.RemotePatterns[0])
 }
 
+// TestGenerateConfigName validates configuration name generation from various URL formats
+// Tests different URL patterns and edge cases for consistent naming
+//
+// TestGenerateConfigName 验证从各种 URL 格式生成配置名称
+// 测试不同的 URL 模式和边界情况以保证命名一致性
 func TestGenerateConfigName(t *testing.T) {
 	t.Run("GitHub SSH URL", func(t *testing.T) {
 		result := generateConfigName("git@github.com:user/repo.git")

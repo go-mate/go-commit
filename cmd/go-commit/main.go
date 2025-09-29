@@ -1,9 +1,9 @@
-// go-commit: Smart Git commit tool with auto Go code formatting
-// Provides intelligent commit workflow with optional Go source formatting
+// go-commit: Smart Git commit app with auto Go code formatting
+// Provides intelligent commit workflow with adaptive Go source formatting
 // Supports amend operations, custom commit messages, and custom configuration
 //
-// go-commit: 智能 Git 提交工具，带有自动 Go 代码格式化
-// 提供智能提交工作流程，可选的 Go 源代码格式化
+// go-commit: 智能 Git 提交应用，带有自动 Go 代码格式化
+// 提供智能提交工作流程，自适应的 Go 源代码格式化
 // 还支持 amend 操作、自定义提交消息和用户配置
 package main
 
@@ -50,7 +50,7 @@ func main() {
 
 	rootCmd.AddCommand(configCmd)
 
-	// Add independent config-example command (same functionality as config example)
+	// Add independent config-example command (same features as config example)
 	// 添加独立的 config-example 命令（与 config example 功能相同）
 	configExampleIndependentCmd := createConfigExampleIndependentCommand(projectRoot)
 
@@ -66,13 +66,21 @@ func main() {
 func createRootCommand(projectRoot string, commitFlags *commitmate.CommitFlags, appConfig *AppConfig) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "go-commit",
-		Short: "Smart Git commit tool with Go code formatting",
-		Long:  "go-commit is a Git commit tool that auto formats changed Go code and provides flexible commit options",
+		Short: "Smart Git commit app with Go code formatting",
+		Long:  "go-commit is a Git commit app that auto formats changed Go code and provides flexible commit options",
 		Run: func(cmd *cobra.Command, args []string) {
-			// Try to load signature config if config file is provided
-			// 如果提供了配置文件则尝试加载签名配置
+			// Load signature config if config file is provided
+			// 如果提供了配置文件则加载签名配置
 			if appConfig.ConfigPath != "" {
 				commitFlags.ApplyProjectConfig(projectRoot, commitmate.LoadConfig(appConfig.ConfigPath))
+			}
+
+			// Validate commit flags and show warnings
+			// 验证提交标志并显示警告
+			if warnings := commitFlags.ValidateFlags(); len(warnings) > 0 {
+				for _, warning := range warnings {
+					zaplog.SUG.Warnf("⚠️  %s", warning)
+				}
 			}
 
 			must.Done(commitmate.GitCommit(projectRoot, commitFlags))
@@ -85,7 +93,8 @@ func createRootCommand(projectRoot string, commitFlags *commitmate.CommitFlags, 
 	rootCmd.PersistentFlags().StringVarP(&commitFlags.Message, "message", "m", "", "commit message")
 	rootCmd.PersistentFlags().BoolVarP(&commitFlags.IsAmend, "amend", "a", false, "amend to the previous commit")
 	rootCmd.PersistentFlags().BoolVarP(&commitFlags.IsForce, "force", "f", false, "force amend even pushed to remote")
-	rootCmd.PersistentFlags().StringVarP(&commitFlags.Eddress, "eddress", "e", "", "email address")
+	rootCmd.PersistentFlags().StringVar(&commitFlags.Mailbox, "mailbox", "", "mailbox address (preferred)")
+	rootCmd.PersistentFlags().StringVarP(&commitFlags.Eddress, "eddress", "e", "", "mailbox address (fallback)")
 	rootCmd.PersistentFlags().BoolVar(&commitFlags.NoCommit, "no-commit", false, "stage changes without committing")
 	rootCmd.PersistentFlags().BoolVar(&commitFlags.FormatGo, "format-go", false, "format changed go files")
 	rootCmd.PersistentFlags().BoolVar(&commitFlags.AutoSign, "auto-sign", false, "auto-use git config signing info when unset")
@@ -110,8 +119,8 @@ func createConfigCommand(projectRoot string, commitFlags *commitmate.CommitFlags
 
 			zaplog.SUG.Debugln("config path:", appConfig.ConfigPath)
 
-			// Load and apply configuration
-			// 加载并应用配置
+			// Load and use configuration
+			// 加载并使用配置
 			config := commitmate.LoadConfig(appConfig.ConfigPath)
 			zaplog.SUG.Debugln("config items:", neatjsons.S(config))
 
@@ -148,7 +157,12 @@ func createConfigExampleIndependentCommand(projectRoot string) *cobra.Command {
 }
 
 // previewConfigTemplate previews configuration template for current project
-// 预览当前项目的配置模板
+// Generates and displays a sample configuration based on project Git remotes
+// Outputs formatted JSON template for simple copying and customization
+//
+// previewConfigTemplate 预览当前项目的配置模板
+// 基于项目 Git 远程生成并显示示例配置
+// 输出格式化的 JSON 模板以便复制和自定义
 func previewConfigTemplate(projectRoot string) {
 	configTemplate := commitmate.GenerateConfigTemplate(projectRoot)
 

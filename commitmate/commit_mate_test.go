@@ -14,8 +14,13 @@ import (
 	"github.com/yyle88/rese"
 )
 
-// setupTestRepo creates a temporary git repository for testing
+// setupTestRepo creates a temporary git repository for testing purposes
 // Environment setup must succeed, so we use rese/must for all operations
+// Returns the temporary DIR path and cleanup function
+//
+// setupTestRepo 为测试目的创建临时 git 仓库
+// 环境设置必须成功，因此我们对所有操作使用 rese/must
+// 返回临时 DIR 路径和清理函数
 func setupTestRepo() (string, func()) {
 	// Create temp DIR - must succeed
 	tempDIR := rese.V1(os.MkdirTemp("", "go-commit-test-*"))
@@ -42,6 +47,11 @@ func setupTestRepo() (string, func()) {
 	return tempDIR, cleanup
 }
 
+// TestGitCommit_NoChanges verifies behavior when repository has no uncommitted changes
+// Should complete successfully without creating new commits
+//
+// TestGitCommit_NoChanges 验证仓库没有未提交更改时的行为
+// 应该成功完成而不创建新提交
 func TestGitCommit_NoChanges(t *testing.T) {
 	tempDIR, cleanup := setupTestRepo()
 	defer cleanup()
@@ -543,5 +553,108 @@ func TestAutoSignFlag(t *testing.T) {
 		// 应该使用手动提供的信息，而不是 git 配置
 		require.Equal(t, "Manual User", string(authorName))
 		require.Equal(t, "manual@example.com", string(authorEmail))
+	})
+}
+
+func TestCommitFlags_ValidateFlags(t *testing.T) {
+	t.Run("Valid configuration should have no warnings", func(t *testing.T) {
+		flags := &CommitFlags{
+			Username: "test-user",
+			Mailbox:  "test@example.com",
+			Message:  "test message",
+			IsAmend:  false,
+			IsForce:  false,
+			NoCommit: false,
+			AutoSign: false,
+		}
+
+		warnings := flags.ValidateFlags()
+		require.Empty(t, warnings)
+	})
+
+	t.Run("Force flag without amend should generate warning", func(t *testing.T) {
+		flags := &CommitFlags{
+			Username: "test-user",
+			Mailbox:  "test@example.com",
+			Message:  "test message",
+			IsAmend:  false,
+			IsForce:  true, // Force without amend
+		}
+
+		warnings := flags.ValidateFlags()
+		require.Len(t, warnings, 1)
+		require.Contains(t, warnings[0], "force flag set but amend is disabled")
+	})
+
+	t.Run("Commit message with no-commit should generate warning", func(t *testing.T) {
+		flags := &CommitFlags{
+			Username: "test-user",
+			Mailbox:  "test@example.com",
+			Message:  "test message", // Message with NoCommit
+			NoCommit: true,
+		}
+
+		warnings := flags.ValidateFlags()
+		require.Len(t, warnings, 1)
+		require.Contains(t, warnings[0], "commit message provided but no-commit flag is set")
+	})
+
+	t.Run("Missing authentication info without auto-sign should generate warning", func(t *testing.T) {
+		flags := &CommitFlags{
+			Username: "", // Empty
+			Mailbox:  "", // Empty
+			Eddress:  "", // Empty
+			Message:  "test message",
+			AutoSign: false, // Auto-sign disabled
+		}
+
+		warnings := flags.ValidateFlags()
+		require.Len(t, warnings, 1)
+		require.Contains(t, warnings[0], "no authentication info provided and auto-sign disabled")
+	})
+
+	t.Run("Missing authentication info with auto-sign should have no warnings", func(t *testing.T) {
+		flags := &CommitFlags{
+			Username: "", // Empty
+			Mailbox:  "", // Empty
+			Eddress:  "", // Empty
+			Message:  "test message",
+			AutoSign: true, // Auto-sign enabled
+		}
+
+		warnings := flags.ValidateFlags()
+		require.Empty(t, warnings)
+	})
+
+	t.Run("Multiple issues should generate multiple warnings", func(t *testing.T) {
+		flags := &CommitFlags{
+			Username: "",             // Empty
+			Mailbox:  "",             // Empty
+			Eddress:  "",             // Empty
+			Message:  "test message", // Message with NoCommit
+			IsAmend:  false,
+			IsForce:  true,  // Force without amend
+			NoCommit: true,  // NoCommit with message
+			AutoSign: false, // Auto-sign disabled
+		}
+
+		warnings := flags.ValidateFlags()
+		require.Len(t, warnings, 3)
+		require.Contains(t, warnings[0], "force flag set but amend is disabled")
+		require.Contains(t, warnings[1], "commit message provided but no-commit flag is set")
+		require.Contains(t, warnings[2], "no authentication info provided and auto-sign disabled")
+	})
+
+	t.Run("Mailbox as fallback for eddress should work", func(t *testing.T) {
+		flags := &CommitFlags{
+			Username: "test-user",
+			Mailbox:  "",                 // Empty mailbox
+			Eddress:  "test@example.com", // But eddress provided
+			Message:  "test message",
+			AutoSign: false,
+		}
+
+		warnings := flags.ValidateFlags()
+		require.Empty(t, warnings) // Should have no warnings since eddress is provided
 	})
 }

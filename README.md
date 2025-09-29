@@ -1,13 +1,13 @@
 [![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/go-mate/go-commit/release.yml?branch=main&label=BUILD)](https://github.com/go-mate/go-commit/actions/workflows/release.yml?query=branch%3Amain)
 [![GoDoc](https://pkg.go.dev/badge/github.com/go-mate/go-commit)](https://pkg.go.dev/github.com/go-mate/go-commit)
 [![Coverage Status](https://img.shields.io/coveralls/github/go-mate/go-commit/main.svg)](https://coveralls.io/github/go-mate/go-commit?branch=main)
-[![Supported Go Versions](https://img.shields.io/badge/Go-1.22--1.25-lightgrey.svg)](https://go.dev/)
+[![Supported Go Versions](https://img.shields.io/badge/Go-1.25+-lightgrey.svg)](https://go.dev/)
 [![GitHub Release](https://img.shields.io/github/release/go-mate/go-commit.svg)](https://github.com/go-mate/go-commit/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-mate/go-commit)](https://goreportcard.com/report/github.com/go-mate/go-commit)
 
 # go-commit
 
-Quick Git commit tool with auto Go changed code formatting capabilities.
+Quick Git commit app with auto Go changed code formatting capabilities.
 
 ---
 
@@ -23,7 +23,7 @@ Quick Git commit tool with auto Go changed code formatting capabilities.
 ⚡ **Auto Go Formatting**: Selective formatting of changed Go files with generated file exclusion  
 🔄 **Signature-info Management**: Automatic Git signature selection based on remote URL patterns  
 🌍 **Wildcard Patterns**: Sophisticated pattern matching for complex enterprise workflows  
-📋 **Configuration-Driven**: JSON-based configuration with priority-based signature matching
+📋 **Configuration-Driven**: JSON-based configuration with score-based signature matching
 
 ## Installation
 
@@ -52,12 +52,12 @@ go-commit --amend --force -m "force amend message"
 
 ## Configuration
 
-Using a configuration file is optional but enables advanced features like automatic signature switching based on the project's remote URL.
+Using a configuration file is adaptive but enables advanced features like automatic signature switching based on the project's remote URL.
 
 To get started, you can generate a configuration template based on your current git remote:
 
 ```bash
-# This creates a go-commit-config.json in your current directory
+# This creates a go-commit-config.json in current DIR
 go-commit config example
 ```
 
@@ -89,10 +89,10 @@ This automatic switching makes multi-project workflow much more convenient.
 
 **Validate Configuration:**
 
-Once setting up your configuration, you can validate it:
+Once setting up the configuration, you can validate it:
 
 ```bash
-# Check if config loads correctly and preview matched signature
+# Check if config loads as expected and preview matched signature
 go-commit config -c /path/to/go-commit-config.json
 ```
 
@@ -124,8 +124,27 @@ gca -m "new commit message"
 gca -m "force update pushed to remote" --force
 ```
 
+### Advanced Usage Examples
+
+```bash
+# Stage changes without committing (useful for testing)
+go-commit --no-commit --format-go
+
+# Auto-format Go files and commit with auto-signature
+go-commit -m "improve code format" --format-go --auto-sign
+
+# Commit with specific user info (overrides config)
+go-commit -u "John Doe" -e "john@company.com" -m "hotfix" --format-go
+
+# Use mailbox instead of eddress for better semantics
+go-commit --mailbox "developer@team.com" -m "feature update" --format-go
+
+# Configuration-driven commit (automatic signature based on remote)
+go-commit -c ~/go-commit-config.json -m "automated commit" --format-go
+```
+
 <!-- TEMPLATE (EN) BEGIN: STANDARD PROJECT FOOTER -->
-<!-- VERSION 2025-09-06 04:53:24.895249 +0000 UTC -->
+<!-- VERSION 2025-09-26 07:39:27.188023 +0000 UTC -->
 
 ## 📄 License
 
@@ -137,7 +156,7 @@ MIT License. See [LICENSE](LICENSE).
 
 Contributions are welcome! Report bugs, suggest features, and contribute code:
 
-- 🐛 **Found a bug?** Open an issue on GitHub with reproduction steps
+- 🐛 **Found a mistake?** Open an issue on GitHub with reproduction steps
 - 💡 **Have a feature idea?** Create an issue to discuss the suggestion
 - 📖 **Documentation confusing?** Report it so we can improve
 - 🚀 **Need new features?** Share the use cases to help us understand requirements
@@ -163,7 +182,7 @@ New code contributions, follow this process:
 8. **Stage**: Stage changes (`git add .`)
 9. **Commit**: Commit changes (`git commit -m "Add feature xxx"`) ensuring backward compatible code
 10. **Push**: Push to the branch (`git push origin feature/xxx`).
-11. **PR**: Open a pull request on GitHub (on the GitHub webpage) with detailed description.
+11. **PR**: Open a merge request on GitHub (on the GitHub webpage) with detailed description.
 
 Please ensure tests pass and include relevant documentation updates.
 
@@ -180,7 +199,7 @@ Welcome to contribute to this project via submitting merge requests and reportin
 - 📝 **Write tech blogs** about development tools and workflows - we provide content writing support
 - 🌟 **Join the ecosystem** - committed to supporting open source and the (golang) development scene
 
-**Have Fun Coding with this package!** 🎉
+**Have Fun Coding with this package!** 🎉🎉🎉
 
 <!-- TEMPLATE (EN) END: STANDARD PROJECT FOOTER -->
 

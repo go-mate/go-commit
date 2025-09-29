@@ -4,20 +4,20 @@ go 1.25.0
 
 require (
 	github.com/go-git/go-git/v5 v5.16.2
-	github.com/go-xlan/gogit v0.0.16
+	github.com/go-xlan/gogit v0.0.17
 	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.11.1
 	github.com/yyle88/erero v1.0.23
-	github.com/yyle88/eroticgo v0.0.4
+	github.com/yyle88/eroticgo v0.0.5
 	github.com/yyle88/formatgo v1.0.27
 	github.com/yyle88/must v0.0.26
 	github.com/yyle88/neatjson v0.0.12
 	github.com/yyle88/osexec v0.0.32
-	github.com/yyle88/osexistpath v0.0.17
+	github.com/yyle88/osexistpath v0.0.18
 	github.com/yyle88/rese v0.0.11
 	github.com/yyle88/runpath v1.0.24
 	github.com/yyle88/tern v0.0.9
-	github.com/yyle88/zaplog v0.0.26
+	github.com/yyle88/zaplog v0.0.27
 	go.uber.org/zap v1.27.0
 )
 
@@ -26,7 +26,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/ProtonMail/go-crypto v1.3.0 // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
-	github.com/cyphar/filepath-securejoin v0.4.1 // indirect
+	github.com/cyphar/filepath-securejoin v0.5.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect

@@ -3,6 +3,7 @@
     {
       "name": "work-projects",
       "username": "bob.smith",
+      "mailbox": "bob.smith@company.com",
       "eddress": "bob.smith@company.com",
       "remotePatterns": [
         "git@github.enterprise.company.com:*",
@@ -15,6 +16,7 @@
     {
       "name": "personal-github",
       "username": "bob-dev",
+      "mailbox": "bob.personal@gmail.com",
       "eddress": "bob.personal@gmail.com",
       "remotePatterns": [
         "git@github.com:bob-dev/*",
@@ -24,6 +26,7 @@
     {
       "name": "personal-gitlab",
       "username": "bob-dev", 
+      "mailbox": "bob.personal@gmail.com",
       "eddress": "bob.personal@gmail.com",
       "remotePatterns": [
         "git@gitlab.com:bob-dev/*",

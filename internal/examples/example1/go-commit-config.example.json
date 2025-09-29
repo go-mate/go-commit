@@ -3,6 +3,7 @@
     {
       "name": "personal-github",
       "username": "alice",
+      "mailbox": "alice.dev@gmail.com",
       "eddress": "alice.dev@gmail.com",
       "remotePatterns": [
         "git@github.com:alice/*",
@@ -12,6 +13,7 @@
     {
       "name": "personal-gitlab",
       "username": "alice",
+      "mailbox": "alice.dev@gmail.com",
       "eddress": "alice.dev@gmail.com",
       "remotePatterns": [
         "git@gitlab.com:alice/*",
@@ -21,6 +23,7 @@
     {
       "name": "github-contributions",
       "username": "alice-oss",
+      "mailbox": "alice.opensource@protonmail.com",
       "eddress": "alice.opensource@protonmail.com",
       "remotePatterns": [
         "git@github.com:golang/*",
@@ -32,6 +35,7 @@
     {
       "name": "fallback-default",
       "username": "alice",
+      "mailbox": "alice.dev@gmail.com",
       "eddress": "alice.dev@gmail.com",
       "remotePatterns": [
         "*"

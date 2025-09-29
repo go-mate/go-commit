@@ -29,6 +29,11 @@ func GenerateConfigTemplate(projectRoot string) *CommitConfig {
 	}
 }
 
+// generateSignatureTemplate creates a signature configuration template based on project Git remotes
+// Extracts remote information and generates appropriate configuration patterns
+//
+// generateSignatureTemplate 基于项目 Git 远程创建签名配置模板
+// 提取远程信息并生成合适的配置模式
 func generateSignatureTemplate(projectRoot string) *SignatureConfig {
 	// Initialize Git client to get remote information
 	// 初始化 Git 客户端获取远程信息
