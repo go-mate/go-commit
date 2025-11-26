@@ -1,70 +1,70 @@
-// Package utils provides advanced utility functions for go-commit pattern matching
-// Contains sophisticated pattern matching utilities for Git remote URL matching
+// Package utils provides advanced pattern matching tools in go-commit context
+// Contains sophisticated pattern matching mechanisms in Git remote URL matching
 // Implements recursive glob matching algorithms with wildcard support and scoring systems
-// Optimized for high-performance pattern matching in enterprise Git workflow automation
+// Optimized to achieve high-performance pattern matching in enterprise Git workflow automation
 //
-// utils 为 go-commit 模式匹配提供高级工具函数
-// 包含用于 Git 远程 URL 匹配的复杂模式匹配工具
+// utils 包提供 go-commit 模式匹配的高级工具函数
+// 包含用于 Git 远程 URL 匹配的复杂模式匹配机制
 // 实现递归 glob 匹配算法，支持通配符和评分系统
-// 为企业 Git 工作流自动化中的高性能模式匹配进行了优化
+// 在企业 Git 工作流自动化中实现高性能模式匹配
 package utils
 
 import "strings"
 
-// MatchRemotePattern calculates intelligent match score for pattern against remote URL
-// Implements advanced scoring system where score equals non-wildcard character count if matched
-// Returns -1 for no match, 0+ for various specificity levels of successful matching
-// Optimized for enterprise Git workflows with complex remote configurations
+// MatchRemotePattern calculates intelligent match score between pattern and remote URL
+// Implements advanced scoring system where score equals non-wildcard count if matched
+// Returns -1 when no match, 0+ when matching succeeds with various specificity levels
+// Optimized with enterprise Git workflows having complex remote configurations
 //
 // Advanced Pattern Syntax Support:
-// - "*" matches any number of characters (including zero) - universal wildcard
+// - "*" matches character sequence of varying length (including zero) - generic wildcard
 // - "git@github.com:*" matches "git@github.com:user/repo.git" - domain-specific
-// - "*://*.com/*" matches "https://example.com/path" - protocol-agnostic
+// - "*://*.com/*" matches "https://example.com/path" - agnostic to protocol type
 // - "git@*.company.com:team/*" - subdomain and path-specific matching
 //
 // Intelligent Scoring Algorithm:
-// - Score equals total non-wildcard characters in pattern for specificity ranking
-// - Exact matches naturally achieve highest scores (complete string length)
-// - More specific patterns automatically receive higher priority scores
-// - Enables automatic best-match selection in multi-pattern configurations
+// - Score equals count of non-wildcard characters in pattern (used in specificity ranking)
+// - Exact matches achieve highest scores (complete string length)
+// - More specific patterns receive higher precedence scores
+// - Enables best-match selection in multi-pattern configurations
 //
 // MatchRemotePattern 为模式与远程 URL 计算智能匹配分数
 // 实现高级评分系统，如果匹配则分数等于非通配符字符数
-// 不匹配返回 -1，成功匹配的各种特异性级别返回 0+
-// 为复杂远程配置的企业 Git 工作流进行了优化
+// 不匹配返回 -1，匹配成功的各种特异性级别返回 0+
+// 针对具有复杂远程配置的企业 Git 工作流进行了优化
 //
 // 高级模式语法支持：
-// - "*" 匹配任意数量的字符（包括零个） - 通用通配符
+// - "*" 匹配变化长度的字符序列（包括零个） - 通用通配符
 // - "git@github.com:*" 匹配 "git@github.com:user/repo.git" - 域名特定
-// - "*://*.com/*" 匹配 "https://example.com/path" - 协议无关
+// - "*://*.com/*" 匹配 "https://example.com/path" - 协议类型无关
 // - "git@*.company.com:team/*" - 子域名和路径特定匹配
 //
 // 智能评分算法：
-// - 分数等于模式中非通配符字符总数，用于特异性排名
-// - 精确匹配自然获得最高分数（完整字符串长度）
-// - 更具体的模式自动获得更高的优先级分数
-// - 在多模式配置中实现自动最佳匹配选择
+// - 分数等于模式中非通配符字符的数量（用于特异性排名）
+// - 精确匹配获得最高分数（完整字符串长度）
+// - 更具体的模式获得更高的优先分数
+// - 在多模式配置中实现最佳匹配选择
 func MatchRemotePattern(pattern, remoteURL string) int {
-	// Use glob matching for all patterns
-	// 对所有模式使用 glob 匹配
+	// Use glob matching on patterns
+	// 对模式使用 glob 匹配
 	if !matchGlob(remoteURL, pattern) {
 		return -1
 	}
 
 	// Calculate score: count non-wildcard characters
-	// Exact matches will naturally get highest scores (full length)
+	// Exact matches get highest scores (complete length)
 	// 计算分数：统计非通配符字符数量
-	// 精确匹配会自然获得最高分数（完整长度）
+	// 精确匹配获得最高分数（完整长度）
 	return countNonWildcardChars(pattern)
 }
 
 // matchGlob performs sophisticated glob pattern matching with advanced wildcard support
-// Implements high-performance recursive matching algorithm for complex URL patterns
-// Returns true if remoteURL successfully matches the specified wildcard pattern
+// Implements high-performance recursive matching algorithm against complex URL patterns
+// Returns true if remoteURL matches the specified wildcard pattern
 //
 // matchGlob 执行复杂的 glob 模式匹配，支持高级通配符
-// 实现高性能递归匹配算法，用于复杂 URL 模式
-// 如果 remoteURL 成功匹配指定的通配符模式则返回 true
+// 针对复杂 URL 模式实现高性能递归匹配算法
+// 如果 remoteURL 匹配指定的通配符模式则返回 true
 func matchGlob(remoteURL, pattern string) bool {
 	// Quick exact match check for performance
 	// 快速精确匹配检查以提升性能
@@ -79,23 +79,23 @@ func matchGlob(remoteURL, pattern string) bool {
 	return matchGlobRecursive([]rune(remoteURL), []rune(pattern))
 }
 
-// matchGlobRecursive recursively matches remoteURL against pattern
+// matchGlobRecursive matches remoteURL against pattern through recursion
 // Uses slice recursion to consume characters from both strings
 //
 // Algorithm:
-// 1. If pattern is empty, check if remoteURL is also empty
-// 2. If pattern starts with *, try matching 0 to N characters
-// 3. If remoteURL is empty but pattern has non-wildcard, no match
-// 4. Otherwise, match single character and recurse
+// 1. When pattern is at end, check if remoteURL is at end as well
+// 2. When pattern starts with *, attempt matching 0 to N characters
+// 3. When remoteURL is at end but pattern has non-wildcard, no match occurs
+// 4. Otherwise, match single unit and recurse
 //
-// matchGlobRecursive 递归地将 remoteURL 与模式匹配
+// matchGlobRecursive 通过递归将 remoteURL 与模式匹配
 // 使用切片递归从两个字符串中消费字符
 //
 // 算法：
-// 1. 如果模式为空，检查 remoteURL 是否也为空
-// 2. 如果模式以 * 开头，尝试匹配 0 到 N 个字符
-// 3. 如果 remoteURL 为空但模式有非通配符，则不匹配
-// 4. 否则，匹配单个字符并递归
+// 1. 当模式到达末尾时，检查 remoteURL 是否也到达末尾
+// 2. 当模式以 * 开头时，尝试匹配 0 到 N 个字符
+// 3. 当 remoteURL 到达末尾但模式有非通配符时，则不匹配
+// 4. 否则，匹配单个单元并递归
 func matchGlobRecursive(remoteURL, pattern []rune) bool {
 	// End of pattern
 	// 模式结束
@@ -103,10 +103,10 @@ func matchGlobRecursive(remoteURL, pattern []rune) bool {
 		return len(remoteURL) == 0
 	}
 
-	// Current character is wildcard
+	// When facing wildcard in pattern
 	// 当前字符是通配符
 	if pattern[0] == '*' {
-		// Try matching 0 or more characters
+		// Attempt matching 0+ characters
 		// 尝试匹配 0 个或多个字符
 		for i := 0; i <= len(remoteURL); i++ {
 			if matchGlobRecursive(remoteURL[i:], pattern[1:]) {
@@ -116,14 +116,14 @@ func matchGlobRecursive(remoteURL, pattern []rune) bool {
 		return false
 	}
 
-	// End of remoteURL but pattern continues (non-wildcard)
+	// remoteURL ends but pattern continues (non-wildcard)
 	// remoteURL 结束但模式继续（非通配符）
 	if len(remoteURL) == 0 {
 		return false
 	}
 
-	// Match single character
-	// 匹配单个字符
+	// Match single unit
+	// 匹配单个单元
 	if remoteURL[0] == pattern[0] {
 		return matchGlobRecursive(remoteURL[1:], pattern[1:])
 	}
@@ -133,13 +133,13 @@ func matchGlobRecursive(remoteURL, pattern []rune) bool {
 	return false
 }
 
-// countNonWildcardChars performs precise character counting in patterns excluding wildcards
-// Calculates specificity score by counting all non-asterisk characters in the pattern
-// Essential component of the intelligent scoring system for pattern priority ranking
+// countNonWildcardChars performs precise counting in patterns excluding wildcards
+// Calculates specificity score via counting non-asterisk characters in the pattern
+// Core component of the intelligent scoring system used in pattern ranking
 //
 // countNonWildcardChars 对模式中除通配符外的字符进行精确计数
 // 通过统计模式中所有非星号字符来计算特异性分数
-// 是用于模式优先级排名的智能评分系统的关键组件
+// 是用于模式排名的智能评分系统的核心组件
 func countNonWildcardChars(pattern string) int {
 	count := 0
 	for _, char := range pattern {

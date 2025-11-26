@@ -9,10 +9,10 @@ import (
 	"github.com/yyle88/zaplog"
 )
 
-// GenerateConfigTemplate generates a configuration template for the current project
+// GenerateConfigTemplate generates a configuration template based on current project
 // Analyzes current Git remote URL and creates a suggested configuration template
-// Provides starter configuration with placeholders for username and email settings
-// Outputs JSON template to stdout for easy copying and customization
+// Provides starting configuration with placeholders in username and mailbox settings
+// Outputs JSON template to stdout allowing simple copying and customization
 //
 // GenerateConfigTemplate 为当前项目生成配置模板
 // 分析当前 Git 远程 URL 并创建建议的配置模板

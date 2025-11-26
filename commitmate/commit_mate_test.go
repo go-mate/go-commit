@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/go-mate/go-commit/internal/utils"
+	"github.com/go-xlan/gitgo"
 	"github.com/go-xlan/gogit"
 	"github.com/stretchr/testify/require"
 	"github.com/yyle88/must"
@@ -25,19 +26,16 @@ func setupTestRepo() (string, func()) {
 	// Create temp DIR - must succeed
 	tempDIR := rese.V1(os.MkdirTemp("", "go-commit-test-*"))
 
-	// Initialize git repository using osexec - must succeed
-	execConfig := osexec.NewExecConfig().WithPath(tempDIR)
-
-	// Initialize git repository - must succeed
-	rese.V1(execConfig.Exec("git", "init"))
+	// Initialize git repository using gitgo - must succeed
+	gcm := gitgo.New(tempDIR)
+	gcm.Init().MustDone()
 
 	// Create initial commit to make it a valid repo - must succeed
 	testFile := filepath.Join(tempDIR, "README.md")
 	must.Done(os.WriteFile(testFile, []byte("# Test Repo\n"), 0644))
 
 	// Add and commit initial file - must succeed
-	rese.V1(execConfig.Exec("git", "add", "."))
-	rese.V1(execConfig.Exec("git", "commit", "-m", "Initial commit"))
+	gcm.Add().Commit("Initial commit").MustDone()
 
 	// Return cleanup function
 	cleanup := func() {
@@ -54,7 +52,7 @@ func setupTestRepo() (string, func()) {
 // 应该成功完成而不创建新提交
 func TestGitCommit_NoChanges(t *testing.T) {
 	tempDIR, cleanup := setupTestRepo()
-	defer cleanup()
+	t.Cleanup(cleanup)
 
 	flags := &CommitFlags{
 		Username: "Test User",
@@ -71,7 +69,7 @@ func TestGitCommit_NoChanges(t *testing.T) {
 
 func TestGitCommit_WithNewFile(t *testing.T) {
 	tempDIR, cleanup := setupTestRepo()
-	defer cleanup()
+	t.Cleanup(cleanup)
 
 	// Create a new file - must succeed for test setup
 	newFile := filepath.Join(tempDIR, "test.txt")
@@ -97,7 +95,7 @@ func TestGitCommit_WithNewFile(t *testing.T) {
 
 func TestGitCommit_NoCommitFlag(t *testing.T) {
 	tempDIR, cleanup := setupTestRepo()
-	defer cleanup()
+	t.Cleanup(cleanup)
 
 	// Create a new file - must succeed for test setup
 	newFile := filepath.Join(tempDIR, "test.txt")
@@ -123,7 +121,7 @@ func TestGitCommit_NoCommitFlag(t *testing.T) {
 
 func TestGitCommit_WithGoFileFormatting(t *testing.T) {
 	tempDIR, cleanup := setupTestRepo()
-	defer cleanup()
+	t.Cleanup(cleanup)
 
 	// Create a Go file with formatting issues - must succeed for test setup
 	goFile := filepath.Join(tempDIR, "main.go")
@@ -152,7 +150,7 @@ func TestGitCommit_WithGoFileFormatting(t *testing.T) {
 
 func TestFormatGoFiles_SkipGeneratedFiles(t *testing.T) {
 	tempDIR, cleanup := setupTestRepo()
-	defer cleanup()
+	t.Cleanup(cleanup)
 
 	// Create various Go files including generated ones - must succeed for test setup
 	files := map[string]string{
@@ -189,7 +187,7 @@ func TestFormatGoFiles_SkipGeneratedFiles(t *testing.T) {
 
 func TestGitCommit_AmendCommit(t *testing.T) {
 	tempDIR, cleanup := setupTestRepo()
-	defer cleanup()
+	t.Cleanup(cleanup)
 
 	// Create a new file and commit it first - must succeed for test setup
 	testFile := filepath.Join(tempDIR, "amend_test.txt")
@@ -222,14 +220,213 @@ func TestGitCommit_AmendCommit(t *testing.T) {
 	require.Empty(t, status)
 }
 
+func TestGitCommit_AmendMessageWithoutCodeChanges(t *testing.T) {
+	tempDIR, cleanup := setupTestRepo()
+	t.Cleanup(cleanup)
+
+	// Create a new file and commit it first - must succeed for test setup
+	testFile := filepath.Join(tempDIR, "test.txt")
+	must.Done(os.WriteFile(testFile, []byte("test content"), 0644))
+
+	flags := &CommitFlags{
+		Username: "Test User",
+		Eddress:  "test@example.com",
+		Message:  "Original message",
+		NoCommit: false,
+		FormatGo: false,
+		IsAmend:  false,
+		IsForce:  false,
+	}
+
+	require.NoError(t, GitCommit(tempDIR, flags))
+
+	// Verify the original commit
+	client := rese.P1(gogit.New(tempDIR))
+	headRef := rese.V1(client.Repo().Head())
+	headCommit := rese.P1(client.Repo().CommitObject(headRef.Hash()))
+	require.Equal(t, "Original message", headCommit.Message)
+
+	// Amend just the message without any file changes
+	flags.Message = "Updated message"
+	flags.IsAmend = true
+
+	require.NoError(t, GitCommit(tempDIR, flags))
+
+	// Verify the message was updated
+	newHeadRef := rese.V1(client.Repo().Head())
+	newHeadCommit := rese.P1(client.Repo().CommitObject(newHeadRef.Hash()))
+	require.Equal(t, "Updated message", newHeadCommit.Message)
+
+	// Verify status is clean
+	status := rese.V1(client.Status())
+	require.Empty(t, status)
+}
+
+func TestGitCommit_AmendSameMessageWithoutCodeChanges(t *testing.T) {
+	tempDIR, cleanup := setupTestRepo()
+	t.Cleanup(cleanup)
+
+	// Create a new file and commit it first - must succeed for test setup
+	testFile := filepath.Join(tempDIR, "test.txt")
+	must.Done(os.WriteFile(testFile, []byte("test content"), 0644))
+
+	flags := &CommitFlags{
+		Username: "Test User",
+		Eddress:  "test@example.com",
+		Message:  "Same message",
+		NoCommit: false,
+		FormatGo: false,
+		IsAmend:  false,
+		IsForce:  false,
+	}
+
+	require.NoError(t, GitCommit(tempDIR, flags))
+
+	// Get original commit hash
+	client := rese.P1(gogit.New(tempDIR))
+	headRef := rese.V1(client.Repo().Head())
+	originalHash := headRef.Hash()
+
+	// Try to amend with the same message - should be no-op
+	flags.IsAmend = true
+
+	require.NoError(t, GitCommit(tempDIR, flags))
+
+	// Verify the commit hash didn't change (no new commit created)
+	newHeadRef := rese.V1(client.Repo().Head())
+	newHash := newHeadRef.Hash()
+	require.Equal(t, originalHash, newHash)
+}
+
+func TestGitCommit_AmendAuthorNameWithoutCodeChanges(t *testing.T) {
+	tempDIR, cleanup := setupTestRepo()
+	t.Cleanup(cleanup)
+
+	// Create a new file and commit it first - must succeed for test setup
+	testFile := filepath.Join(tempDIR, "test.txt")
+	must.Done(os.WriteFile(testFile, []byte("test content"), 0644))
+
+	flags := &CommitFlags{
+		Username: "Original User",
+		Eddress:  "test@example.com",
+		Message:  "Test message",
+		NoCommit: false,
+		FormatGo: false,
+		IsAmend:  false,
+		IsForce:  false,
+	}
+
+	require.NoError(t, GitCommit(tempDIR, flags))
+
+	// Verify the original commit
+	client := rese.P1(gogit.New(tempDIR))
+	headRef := rese.V1(client.Repo().Head())
+	headCommit := rese.P1(client.Repo().CommitObject(headRef.Hash()))
+	require.Equal(t, "Original User", headCommit.Author.Name)
+
+	// Amend just the author name without any file changes
+	flags.Username = "Updated User"
+	flags.IsAmend = true
+
+	require.NoError(t, GitCommit(tempDIR, flags))
+
+	// Verify the author name was updated
+	newHeadRef := rese.V1(client.Repo().Head())
+	newHeadCommit := rese.P1(client.Repo().CommitObject(newHeadRef.Hash()))
+	require.Equal(t, "Updated User", newHeadCommit.Author.Name)
+
+	// Verify status is clean
+	status := rese.V1(client.Status())
+	require.Empty(t, status)
+}
+
+func TestGitCommit_AmendAuthorMailboxWithoutCodeChanges(t *testing.T) {
+	tempDIR, cleanup := setupTestRepo()
+	t.Cleanup(cleanup)
+
+	// Create a new file and commit it first - must succeed for test setup
+	testFile := filepath.Join(tempDIR, "test.txt")
+	must.Done(os.WriteFile(testFile, []byte("test content"), 0644))
+
+	flags := &CommitFlags{
+		Username: "Test User",
+		Eddress:  "original@example.com",
+		Message:  "Test message",
+		NoCommit: false,
+		FormatGo: false,
+		IsAmend:  false,
+		IsForce:  false,
+	}
+
+	require.NoError(t, GitCommit(tempDIR, flags))
+
+	// Verify the original commit
+	client := rese.P1(gogit.New(tempDIR))
+	headRef := rese.V1(client.Repo().Head())
+	headCommit := rese.P1(client.Repo().CommitObject(headRef.Hash()))
+	require.Equal(t, "original@example.com", headCommit.Author.Email)
+
+	// Amend just the mailbox without any file changes
+	flags.Eddress = "updated@example.com"
+	flags.IsAmend = true
+
+	require.NoError(t, GitCommit(tempDIR, flags))
+
+	// Verify the mailbox was updated
+	newHeadRef := rese.V1(client.Repo().Head())
+	newHeadCommit := rese.P1(client.Repo().CommitObject(newHeadRef.Hash()))
+	require.Equal(t, "updated@example.com", newHeadCommit.Author.Email)
+
+	// Verify status is clean
+	status := rese.V1(client.Status())
+	require.Empty(t, status)
+}
+
+func TestGitCommit_AmendWithEmptyMessageWithoutCodeChanges(t *testing.T) {
+	tempDIR, cleanup := setupTestRepo()
+	t.Cleanup(cleanup)
+
+	// Create a new file and commit it first - must succeed for test setup
+	testFile := filepath.Join(tempDIR, "test.txt")
+	must.Done(os.WriteFile(testFile, []byte("test content"), 0644))
+
+	flags := &CommitFlags{
+		Username: "Test User",
+		Eddress:  "test@example.com",
+		Message:  "Original message",
+		NoCommit: false,
+		FormatGo: false,
+		IsAmend:  false,
+		IsForce:  false,
+	}
+
+	require.NoError(t, GitCommit(tempDIR, flags))
+
+	// Get original commit hash
+	client := rese.P1(gogit.New(tempDIR))
+	headRef := rese.V1(client.Repo().Head())
+	originalHash := headRef.Hash()
+
+	// Try to amend with empty message and no file changes - should be no-op
+	flags.Message = ""
+	flags.IsAmend = true
+
+	require.NoError(t, GitCommit(tempDIR, flags))
+
+	// Verify the commit hash didn't change (no amend happened)
+	newHeadRef := rese.V1(client.Repo().Head())
+	newHash := newHeadRef.Hash()
+	require.Equal(t, originalHash, newHash, "commit should not be amended when message is empty")
+}
+
 // setupTestRepoWithRemote creates a test repo with git remote configured
 // Environment setup must succeed, so we use rese/must for all operations
 func setupTestRepoWithRemote(remoteURL string) (string, func()) {
 	tempDIR, cleanup := setupTestRepo()
 
-	// Add remote to the repository - must succeed
-	execConfig := osexec.NewExecConfig().WithPath(tempDIR)
-	rese.V1(execConfig.Exec("git", "remote", "add", "origin", remoteURL))
+	// Add remote to the repository using gitgo - must succeed
+	gcm := gitgo.New(tempDIR)
+	gcm.RemoteAdd("origin", remoteURL).MustDone()
 
 	return tempDIR, cleanup
 }
@@ -365,11 +562,11 @@ func TestCommitConfig_MatchSignature_Priority(t *testing.T) {
 
 func TestLoadConfig_FileExists(t *testing.T) {
 	tempDIR := rese.V1(os.MkdirTemp("", "config-test-*"))
-	defer func() { must.Done(os.RemoveAll(tempDIR)) }()
+	t.Cleanup(func() { must.Done(os.RemoveAll(tempDIR)) })
 
 	// Change to temp DIR so config is found
 	originalDir := rese.V1(os.Getwd())
-	defer func() { must.Done(os.Chdir(originalDir)) }()
+	t.Cleanup(func() { must.Done(os.Chdir(originalDir)) })
 	must.Done(os.Chdir(tempDIR))
 
 	testConfig := &CommitConfig{
@@ -392,7 +589,7 @@ func TestLoadConfig_FileExists(t *testing.T) {
 
 func TestLoadConfig_NoFileFound(t *testing.T) {
 	tempDIR := rese.V1(os.MkdirTemp("", "config-test-*"))
-	defer func() { must.Done(os.RemoveAll(tempDIR)) }()
+	t.Cleanup(func() { must.Done(os.RemoveAll(tempDIR)) })
 
 	nonExistentPath := filepath.Join(tempDIR, "non-existent-config.json")
 
@@ -405,7 +602,7 @@ func TestLoadConfig_NoFileFound(t *testing.T) {
 func TestApplyProjectConfig_WithRemoteMatching(t *testing.T) {
 	// 1. 立足项目 - 设置项目根目录
 	tempDIR, cleanup := setupTestRepoWithRemote("git@github.com:user/repo.git")
-	defer cleanup()
+	t.Cleanup(cleanup)
 
 	// 2. 环境配置 - 创建测试配置
 	testConfig := &CommitConfig{
@@ -435,7 +632,7 @@ func TestApplyProjectConfig_WithRemoteMatching(t *testing.T) {
 func TestApplyProjectConfig_ConfigFlagOverride(t *testing.T) {
 	// 1. 立足项目 - 设置项目根目录
 	tempDIR, cleanup := setupTestRepoWithRemote("git@github.com:user/repo.git")
-	defer cleanup()
+	t.Cleanup(cleanup)
 
 	// 2. 环境配置 - 创建测试配置
 	testConfig := &CommitConfig{
@@ -465,7 +662,7 @@ func TestApplyProjectConfig_ConfigFlagOverride(t *testing.T) {
 
 func TestAutoSignFlag(t *testing.T) {
 	tempDIR, cleanup := setupTestRepo()
-	defer cleanup()
+	t.Cleanup(cleanup)
 
 	t.Run("AutoSign enabled fills empty username and eddress", func(t *testing.T) {
 		// Create a new file for commit - must succeed for test setup

@@ -1,3 +1,10 @@
+// Package example4_test demonstrates advanced pattern matching scenarios
+// Tests exact matches, team-specific patterns, subdomain wildcards, and pattern priority
+// Validates sophisticated matching algorithms in complex enterprise environments
+//
+// example4_test 演示高级模式匹配场景
+// 测试精确匹配、团队特定模式、子域名通配符和模式优先级
+// 验证复杂企业环境中的复杂匹配算法
 package example4_test
 
 import (
@@ -13,6 +20,11 @@ import (
 	"github.com/yyle88/runpath"
 )
 
+// TestLoadExample4Config validates advanced pattern configuration file loading
+// Tests that configuration contains expected pattern entries with correct structure
+//
+// TestLoadExample4Config 验证高级模式配置文件加载
+// 测试配置包含预期的模式条目和正确结构
 func TestLoadExample4Config(t *testing.T) {
 	configPath := runpath.PARENT.Join("advanced-patterns.json")
 	config := commitmate.LoadConfig(configPath)
@@ -24,6 +36,11 @@ func TestLoadExample4Config(t *testing.T) {
 	require.Equal(t, "protocol-flexible", config.Signatures[3].Name)
 }
 
+// TestExample4ExactRepoMatching validates exact repository pattern matching
+// Tests highest priority matching with specific repository URLs
+//
+// TestExample4ExactRepoMatching 验证精确仓库模式匹配
+// 测试特定仓库 URL 的最高优先级匹配
 func TestExample4ExactRepoMatching(t *testing.T) {
 	configPath := runpath.PARENT.Join("advanced-patterns.json")
 	config := commitmate.LoadConfig(configPath)
@@ -41,6 +58,11 @@ func TestExample4ExactRepoMatching(t *testing.T) {
 	require.Equal(t, "exact-repo-match", signature.Name)
 }
 
+// TestExample4TeamSpecificMatching validates team-specific pattern matching
+// Tests matching repositories within specific team namespaces
+//
+// TestExample4TeamSpecificMatching 验证团队特定模式匹配
+// 测试特定团队命名空间内的仓库匹配
 func TestExample4TeamSpecificMatching(t *testing.T) {
 	configPath := runpath.PARENT.Join("advanced-patterns.json")
 	config := commitmate.LoadConfig(configPath)
@@ -63,6 +85,11 @@ func TestExample4TeamSpecificMatching(t *testing.T) {
 	require.NotEqual(t, "team-specific", signature.Name)
 }
 
+// TestExample4MultiSubdomainMatching validates wildcard subdomain pattern matching
+// Tests matching across multiple subdomains with wildcard patterns
+//
+// TestExample4MultiSubdomainMatching 验证通配符子域名模式匹配
+// 测试使用通配符模式跨多个子域名的匹配
 func TestExample4MultiSubdomainMatching(t *testing.T) {
 	configPath := runpath.PARENT.Join("advanced-patterns.json")
 	config := commitmate.LoadConfig(configPath)
@@ -85,6 +112,11 @@ func TestExample4MultiSubdomainMatching(t *testing.T) {
 	require.Equal(t, "multi-subdomain", signature.Name)
 }
 
+// TestExample4PatternPriority validates pattern matching priority rules
+// Tests that more specific patterns override less specific ones
+//
+// TestExample4PatternPriority 验证模式匹配优先级规则
+// 测试更具体的模式覆盖不太具体的模式
 func TestExample4PatternPriority(t *testing.T) {
 	configPath := runpath.PARENT.Join("advanced-patterns.json")
 	config := commitmate.LoadConfig(configPath)
@@ -103,9 +135,14 @@ func TestExample4PatternPriority(t *testing.T) {
 	require.Equal(t, "diana", signature.Username)
 }
 
+// TestExample4GitCommitExactRepo tests commit workflow with exact repository matching
+// Creates exact match repository, applies configuration, and verifies commit metadata
+//
+// TestExample4GitCommitExactRepo 测试精确仓库匹配的提交工作流程
+// 创建精确匹配仓库，应用配置，并验证提交元数据
 func TestExample4GitCommitExactRepo(t *testing.T) {
 	tempDIR := rese.V1(os.MkdirTemp("", "example4-exact-test-*"))
-	defer func() { must.Done(os.RemoveAll(tempDIR)) }()
+	t.Cleanup(func() { must.Done(os.RemoveAll(tempDIR)) })
 
 	execConfig := osexec.NewExecConfig().WithPath(tempDIR)
 	rese.V1(execConfig.Exec("git", "init"))
@@ -145,9 +182,14 @@ func GenerateToken()[]byte{
 	require.Equal(t, "diana.lead@critical-project.com", string(authorEmail))
 }
 
+// TestExample4GitCommitTeamSpecific tests commit workflow with team-specific matching
+// Creates team repository, applies configuration, and verifies commit metadata
+//
+// TestExample4GitCommitTeamSpecific 测试团队特定匹配的提交工作流程
+// 创建团队仓库，应用配置，并验证提交元数据
 func TestExample4GitCommitTeamSpecific(t *testing.T) {
 	tempDIR := rese.V1(os.MkdirTemp("", "example4-team-test-*"))
-	defer func() { must.Done(os.RemoveAll(tempDIR)) }()
+	t.Cleanup(func() { must.Done(os.RemoveAll(tempDIR)) })
 
 	execConfig := osexec.NewExecConfig().WithPath(tempDIR)
 	rese.V1(execConfig.Exec("git", "init"))
@@ -186,9 +228,14 @@ func HealthCheck(w http.ResponseWriter,r*http.Request){
 	require.Equal(t, "diana@company.com", string(authorEmail))
 }
 
+// TestExample4GitCommitMultiSubdomain tests commit workflow with subdomain wildcard matching
+// Creates subdomain repository, applies configuration, and verifies commit metadata
+//
+// TestExample4GitCommitMultiSubdomain 测试子域名通配符匹配的提交工作流程
+// 创建子域名仓库，应用配置，并验证提交元数据
 func TestExample4GitCommitMultiSubdomain(t *testing.T) {
 	tempDIR := rese.V1(os.MkdirTemp("", "example4-subdomain-test-*"))
-	defer func() { must.Done(os.RemoveAll(tempDIR)) }()
+	t.Cleanup(func() { must.Done(os.RemoveAll(tempDIR)) })
 
 	execConfig := osexec.NewExecConfig().WithPath(tempDIR)
 	rese.V1(execConfig.Exec("git", "init"))

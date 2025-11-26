@@ -22,7 +22,7 @@
 🎯 **智能提交自动化**: 智能暂存、格式化和提交，支持 amend 模式  
 ⚡ **自动 Go 格式化**: 选择性格式化修改的 Go 文件，排除生成文件  
 🔄 **签名信息管理**: 基于远程 URL 模式的自动 Git 签名选择  
-🌍 **通配符模式**: 复杂企业工作流的高级模式匹配  
+🌍 **通配符模式**: 复杂企业工作流下的高级模式匹配  
 📋 **配置驱动**: 基于 JSON 的配置，支持评分式签名匹配
 
 ## 安装
@@ -61,7 +61,7 @@ go-commit --amend --force -m "force amend message"
 go-commit config example
 ```
 
-该文件允许您为不同的远程代码库定义签名，格式如下：
+该文件允许您在不同的远程代码库中定义签名：
 
 ```json
 {
@@ -96,7 +96,7 @@ go-commit config example
 go-commit config -c /path/to/go-commit-config.json
 ```
 
-如果希望了解更多高级用法，请参阅[配置示例](internal/examples/)。
+参阅[配置示例](internal/examples/)了解高级用法。
 
 ## 推荐别名
 
@@ -133,34 +133,49 @@ go-commit --no-commit --format-go
 # 自动格式化 Go 文件并使用自动签名提交
 go-commit -m "改进代码格式" --format-go --auto-sign
 
-# 使用特定用户信息提交（覆盖配置）
-go-commit -u "张三" -e "zhangsan@company.com" -m "紧急修复" --format-go
+# 使用特定用户名信息提交（覆盖配置）
+go-commit -u "张三" -e "zhangsan@corp.com" -m "紧急修复" --format-go
 
-# 使用 mailbox 而非 eddress，语义更清晰
-go-commit --mailbox "developer@team.com" -m "功能更新" --format-go
+# 使用 mailbox 而非 eddress，改进语义
+go-commit --mailbox "dev@team.com" -m "功能更新" --format-go
 
 # 配置驱动的提交（基于远程自动选择签名）
 go-commit -c ~/go-commit-config.json -m "自动化提交" --format-go
 ```
 
-<!-- TEMPLATE (ZH) BEGIN: STANDARD PROJECT FOOTER -->
-<!-- VERSION 2025-09-26 07:39:27.188023 +0000 UTC -->
+---
 
-## 📄 许可证类型
+## 🛠️ 开发须知
 
-MIT 许可证。详见 [LICENSE](LICENSE)。
+**Git 包依赖规范（项目特定规则）：**
+
+在当前项目中，我们严格区分生产代码和测试代码的包依赖：
+
+- **生产代码**：只能使用 `gogit` (github.com/go-xlan/gogit) - 提供基于对象的 Git 操作
+- **测试代码**：可以使用 `gitgo` (github.com/go-xlan/gitgo) - 提供链式操作来构建测试条件
+
+⚠️ **重要提醒**：禁止在生产逻辑代码中使用 `gitgo`。这个规则仅适用于当前项目，以保持清晰的关注点分离。
 
 ---
 
-## 🤝 项目贡献
+<!-- TEMPLATE (ZH) BEGIN: STANDARD PROJECT FOOTER -->
+<!-- VERSION 2025-11-25 03:52:28.131064 +0000 UTC -->
+
+## 📄 许可证类型
+
+MIT 许可证 - 详见 [LICENSE](LICENSE)。
+
+---
+
+## 💬 联系与反馈
 
 非常欢迎贡献代码！报告 BUG、建议功能、贡献代码：
 
-- 🐛 **发现问题？** 在 GitHub 上提交问题并附上重现步骤
-- 💡 **功能建议？** 创建 issue 讨论您的想法
-- 📖 **文档疑惑？** 报告问题，帮助我们改进文档
+- 🐛 **问题报告？** 在 GitHub 上提交问题并附上重现步骤
+- 💡 **新颖思路？** 创建 issue 讨论
+- 📖 **文档疑惑？** 报告问题，帮助我们完善文档
 - 🚀 **需要功能？** 分享使用场景，帮助理解需求
-- ⚡ **性能瓶颈？** 报告慢操作，帮助我们优化性能
+- ⚡ **性能瓶颈？** 报告慢操作，协助解决性能问题
 - 🔧 **配置困扰？** 询问复杂设置的相关问题
 - 📢 **关注进展？** 关注仓库以获取新版本和功能
 - 🌟 **成功案例？** 分享这个包如何改善工作流程
@@ -178,7 +193,7 @@ MIT 许可证。详见 [LICENSE](LICENSE)。
 4. **分支**：创建功能分支（`git checkout -b feature/xxx`）
 5. **编码**：实现您的更改并编写全面的测试
 6. **测试**：（Golang 项目）确保测试通过（`go test ./...`）并遵循 Go 代码风格约定
-7. **文档**：为面向用户的更改更新文档，并使用有意义的提交消息
+7. **文档**：面向用户的更改需要更新文档
 8. **暂存**：暂存更改（`git add .`）
 9. **提交**：提交更改（`git commit -m "Add feature xxx"`）确保向后兼容的代码
 10. **推送**：推送到分支（`git push origin feature/xxx`）
@@ -190,7 +205,7 @@ MIT 许可证。详见 [LICENSE](LICENSE)。
 
 ## 🌟 项目支持
 
-非常欢迎通过提交 Merge Request 和报告问题来为此项目做出贡献。
+非常欢迎通过提交 Merge Request 和报告问题来贡献此项目。
 
 **项目支持：**
 

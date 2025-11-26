@@ -31,12 +31,12 @@ import (
 	"go.uber.org/zap"
 )
 
-// CommitFlags represents the configuration for a commit operation
-// Contains all custom options for customizing commit actions
+// CommitFlags represents the configuration in commit operations
+// Contains options allowing customization of commit actions
 // Supports amend mode, force operations, and selective Go formatting
 //
 // CommitFlags 代表提交操作的配置
-// 包含所有用户指定的自定义提交行为选项
+// 包含允许自定义提交行为的选项
 // 支持 amend 模式、强制操作和选择性 Go 格式化
 type CommitFlags struct {
 	Username string // Git account username // Git 账户用户名
@@ -51,12 +51,12 @@ type CommitFlags struct {
 }
 
 // ValidateFlags performs basic validation on commit flags and returns warnings
-// Checks for logical conflicts and missing essential information
-// Returns slice of warning messages for potential issues
+// Checks to detect conflicts and missing required information
+// Returns slice of warning messages about possible issues
 //
 // ValidateFlags 对提交标志执行基本验证并返回警告
-// 检查逻辑冲突和缺失的基本信息
-// 返回潜在问题的警告消息切片
+// 检查冲突和缺失的必需信息
+// 返回关于可能问题的警告消息切片
 func (f *CommitFlags) ValidateFlags() []string {
 	var warnings []string
 
@@ -116,10 +116,7 @@ func GitCommit(projectRoot string, commitFlags *CommitFlags) error {
 
 	// Check staged changes
 	// 检查已暂存的更改
-	status, err = client.Status()
-	if err != nil {
-		return erero.Wro(err)
-	}
+	status = rese.V1(client.Status())
 	zaplog.SUG.Debugln(neatjsons.S(status))
 
 	// Format Go files if requested
@@ -141,31 +138,14 @@ func GitCommit(projectRoot string, commitFlags *CommitFlags) error {
 
 		// Check status when formatting done
 		// 格式化完成后检查状态
-		status, err = client.Status()
-		if err != nil {
-			return erero.Wro(err)
-		}
+		status = rese.V1(client.Status())
 		zaplog.SUG.Debugln(neatjsons.S(status))
-	}
-
-	// Exit when no changes to commit
-	// 如果没有更改要提交则提前退出
-	if len(status) == 0 {
-		zaplog.SUG.Debugln("no change return")
-		return nil
-	}
-
-	// Exit if staging without commit was requested
-	// 如果请求仅暂存而不提交则退出
-	if commitFlags.NoCommit {
-		zaplog.SUG.Debugln("no commit return")
-		return nil
 	}
 
 	// Prepare commit information from flags
 	// 从标志准备提交信息
-	// Prioritize Mailbox instead of Eddress for mailbox address
-	// 优先使用 Mailbox 而非 Eddress 作为邮箱地址
+	// Get mailbox address (Mailbox field preferred, Eddress as fallback)
+	// 获取邮箱地址（优先 Mailbox 字段，Eddress 作为备选）
 	mailbox := zerotern.VV(commitFlags.Mailbox, commitFlags.Eddress)
 
 	commitInfo := &gogit.CommitInfo{
@@ -174,10 +154,27 @@ func GitCommit(projectRoot string, commitFlags *CommitFlags) error {
 		Message: commitFlags.Message,
 	}
 
-	// Use empty username/eddress from Git config as fallback (when allowed)
+	// Use empty username/mailbox from Git config as fallback (when allowed)
 	// 从 Git 配置使用空的用户名/邮箱作为备选（当允许时）
 	if commitFlags.AutoSign {
-		useConfigSignInfo(projectRoot, commitInfo)
+		setFromGitConfig(projectRoot, commitInfo)
+	}
+
+	// Exit when no changes to commit
+	// 如果没有更改要提交则提前退出
+	if status = rese.V1(client.Status()); len(status) == 0 {
+		canContinue := commitFlags.IsAmend && hasMetadataChanges(client, commitInfo)
+		if !canContinue {
+			zaplog.SUG.Debugln("no change return")
+			return nil
+		}
+	}
+
+	// Exit if staging without commit was requested
+	// 如果请求仅暂存而不提交则退出
+	if commitFlags.NoCommit {
+		zaplog.SUG.Debugln("no commit return")
+		return nil
 	}
 
 	// Execute commit or amend based on flags
@@ -207,16 +204,59 @@ func GitCommit(projectRoot string, commitFlags *CommitFlags) error {
 	return nil
 }
 
-// FormatChangedGoFiles formats Go files that have been changed
-// Uses allowFormat function to determine which files should be formatted
-// Applies Go formatting to eligible files and logs the process
+// hasMetadataChanges checks if commit metadata differs from HEAD commit
+// Returns true when commit message, author's name, and author's mailbox differs from HEAD
+// Returns false when no metadata changes exist
 //
-// 格式化已改变的 Go 文件
-// 使用 allowFormat 函数确定哪些文件应该被格式化
-// 对符合条件的文件应用 Go 格式化并记录过程
+// hasMetadataChanges 检查提交元数据是否与 HEAD 提交不同
+// 当提交消息、作者名称和作者邮箱与 HEAD 不同时返回 true
+// 当没有元数据改动时返回 false
+func hasMetadataChanges(client *gogit.Client, commitInfo *gogit.CommitInfo) bool {
+	// Get HEAD commit to compare
+	// 获取 HEAD 提交进行比较
+	topReference := rese.P1(client.Repo().Head())
+
+	// Get commit object from HEAD reference
+	// 从 HEAD 引用获取提交对象
+	commitObject := rese.P1(client.Repo().CommitObject(topReference.Hash()))
+
+	// Check if message changed (when new message is not blank)
+	// 检查消息是否改变（当新消息非空时）
+	if commitInfo.Message != "" && commitObject.Message != commitInfo.Message {
+		zaplog.SUG.Debugln("message changed, allow amend without file changes")
+		return true
+	}
+
+	// Check if author's name changed
+	// 检查作者名称是否改变
+	if commitObject.Author.Name != commitInfo.Name {
+		zaplog.SUG.Debugln("author's name changed, allow amend without file changes")
+		return true
+	}
+
+	// Check if author's mailbox changed
+	// 检查作者邮箱是否改变
+	if commitObject.Author.Email != commitInfo.Mailbox {
+		zaplog.SUG.Debugln("author's mailbox changed, allow amend without file changes")
+		return true
+	}
+
+	// Nothing changed, no need to amend
+	// 没有任何改变，无需 amend
+	zaplog.SUG.Debugln("no metadata changed, no amend needed")
+	return false
+}
+
+// FormatChangedGoFiles applies formatting to changed Go files
+// Uses allowFormat function to determine which files get formatted
+// Applies Go formatting to matching files and logs the process
+//
+// FormatChangedGoFiles 对已改变的 Go 文件应用格式化
+// 使用 allowFormat 函数确定哪些文件需要格式化
+// 对匹配的文件应用 Go 格式化并记录过程
 func FormatChangedGoFiles(projectRoot string, client *gogit.Client, allowFormat func(path string) bool) error {
 	// Configure matching options for Go files with custom function
-	// 为 Go 文件配置带有自定义过滤器的匹配选项
+	// 配置 Go 文件的匹配选项，使用自定义过滤器
 	matchOptions := gogitchange.NewMatchOptions().MatchType(".go").MatchPath(func(path string) bool {
 		zaplog.SUG.Debugln("path:", path)
 
@@ -270,21 +310,21 @@ func (f *CommitFlags) ApplyProjectConfig(projectRoot string, config *CommitConfi
 }
 
 // ApplySignature applies signature configuration to flags
-// Signature config values override existing flag values when signature fields are not empty
+// Signature config values override existing flag values when signature fields have content
 //
 // ApplySignature 将签名配置应用到标志
-// 当签名字段非空时，签名配置值会覆盖现有标志值
+// 当签名字段有内容时，签名配置值会覆盖现有标志值
 func (f *CommitFlags) ApplySignature(signature *SignatureConfig) {
 	if signature != nil {
 		zaplog.SUG.Debugln("applying signature config:", neatjsons.S(signature))
-		// Use signature config value if available, otherwise keep existing flag value
-		// Uses zerotern.VV to use config values or keep existing flag values as fallback
+		// Use signature config value when available, else keep existing flag value
+		// Uses zerotern.VV to choose config values with existing flag values as fallback
 		// 如果配置中有值就使用配置值，否则保留现有标志值
 		// 使用 zerotern.VV 优先使用配置值，其次使用现有标志值作为备选
 		f.Username = zerotern.VV(signature.Username, f.Username)
 
-		// Prioritize mailbox instead of eddress from signature config
-		// 从签名配置中优先使用 mailbox 而非 eddress
+		// Get mailbox from signature config (Mailbox field preferred, Eddress as fallback)
+		// 从签名配置获取邮箱（优先 Mailbox 字段，Eddress 作为备选）
 		mailbox := zerotern.VV(signature.Mailbox, signature.Eddress)
 
 		// Set mailbox to both fields to maintain compatibility
@@ -363,8 +403,8 @@ func validateConfig(config *CommitConfig) {
 		if signature.Username == "" {
 			zaplog.SUG.Warnf("signature[%d] missing username", idx)
 		}
-		// Check for mailbox address (mailbox preferred instead of eddress)
-		// 检查邮箱地址（优先 mailbox 而非 eddress）
+		// Check for mailbox address (Mailbox field preferred, Eddress as fallback)
+		// 检查邮箱地址（优先 Mailbox 字段，Eddress 作为备选）
 		if signature.Mailbox == "" && signature.Eddress == "" {
 			zaplog.SUG.Warnf("signature[%d] missing mailbox (mailbox or eddress)", idx)
 		}
@@ -457,13 +497,13 @@ func (config *CommitConfig) MatchSignature(remoteURL string) *SignatureConfig {
 	return bestMatch
 }
 
-// DefaultAllowFormat is the default check function for Go files formatting
+// DefaultAllowFormat is the default check function in Go files formatting
 // Skips common generated files like .pb.go, wire_gen.go, and ent files
-// Returns true if the file should be formatted, false to skip
+// Returns true when the file needs formatting, false to skip
 //
 // DefaultAllowFormat 是 Go 文件格式化的默认过滤函数
 // 跳过常见的生成文件，如 .pb.go、wire_gen.go 和 ent 文件
-// 如果文件应该被格式化则返回 true，跳过则返回 false
+// 当文件需要格式化时返回 true，跳过则返回 false
 func DefaultAllowFormat(path string) bool {
 	// Skip various types of generated files
 	// 跳过各种类型的生成文件
@@ -477,12 +517,12 @@ func DefaultAllowFormat(path string) bool {
 	return true
 }
 
-// useConfigSignInfo sets empty username/eddress fields from Git configuration
+// setFromGitConfig sets blank username/mailbox fields from Git configuration
 // Uses "git config user.name" and "git config user.email" as fallback
 //
-// useConfigSignInfo 从 Git 配置填充空的用户名/邮箱字段
+// setFromGitConfig 从 Git 配置填充空白的用户名/邮箱字段
 // 使用 "git config user.name" 和 "git config user.email" 作为备选
-func useConfigSignInfo(projectRoot string, commitInfo *gogit.CommitInfo) {
+func setFromGitConfig(projectRoot string, commitInfo *gogit.CommitInfo) {
 	// Just get Git config if username is empty
 	// 仅在用户名为空时才尝试获取 Git 配置
 	if commitInfo.Name == "" {
@@ -492,12 +532,12 @@ func useConfigSignInfo(projectRoot string, commitInfo *gogit.CommitInfo) {
 		}
 	}
 
-	// Just get Git config if eddress is empty
+	// Just get Git config if mailbox is empty
 	// 仅在邮箱为空时才尝试获取 Git 配置
 	if commitInfo.Mailbox == "" {
-		if gitEddress := getGitConfigValue(projectRoot, "user.email"); gitEddress != "" {
-			commitInfo.Mailbox = gitEddress
-			zaplog.SUG.Debugln("using git config user.email:", gitEddress)
+		if gitMailbox := getGitConfigValue(projectRoot, "user.email"); gitMailbox != "" {
+			commitInfo.Mailbox = gitMailbox
+			zaplog.SUG.Debugln("using git config user.email:", gitMailbox)
 		}
 	}
 }

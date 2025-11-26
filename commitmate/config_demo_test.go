@@ -22,9 +22,9 @@ func TestGenerateConfigTemplate(t *testing.T) {
 	// Create temporary DIR for test repository
 	// 为测试仓库创建临时 DIR
 	tempDIR := rese.V1(os.MkdirTemp("", "test-config-template-*"))
-	defer func() {
+	t.Cleanup(func() {
 		must.Done(os.RemoveAll(tempDIR))
-	}()
+	})
 
 	// Initialize test git repository
 	// 初始化测试 git 仓库
@@ -59,9 +59,9 @@ func TestGenerateConfigTemplateWithoutRemote(t *testing.T) {
 	// Create temporary DIR for test repository
 	// 为测试仓库创建临时 DIR
 	tempDIR := rese.V1(os.MkdirTemp("", "test-config-no-remote-*"))
-	defer func() {
+	t.Cleanup(func() {
 		must.Done(os.RemoveAll(tempDIR))
-	}()
+	})
 
 	// Initialize test git repository without remotes
 	// 初始化没有远程的测试 git 仓库
@@ -88,9 +88,9 @@ func TestGenerateConfigTemplateWithMultipleRemotes(t *testing.T) {
 	// Create temporary DIR for test repository
 	// 为测试仓库创建临时 DIR
 	tempDIR := rese.V1(os.MkdirTemp("", "test-config-multiple-*"))
-	defer func() {
+	t.Cleanup(func() {
 		must.Done(os.RemoveAll(tempDIR))
-	}()
+	})
 
 	// Initialize test git repository
 	// 初始化测试 git 仓库

@@ -103,13 +103,13 @@ func createRootCommand(projectRoot string, commitFlags *commitmate.CommitFlags, 
 	return rootCmd
 }
 
-// createConfigCommand creates the config subcommand for configuration management
+// createConfigCommand creates the config subcommand to manage configurations
 // 创建用于配置管理的 config 子命令
 func createConfigCommand(projectRoot string, commitFlags *commitmate.CommitFlags, appConfig *AppConfig) *cobra.Command {
 	return &cobra.Command{
 		Use:   "config",
 		Short: "Configuration management for go-commit",
-		Long:  "Manage go-commit configurations, validate existing configs, or generate templates",
+		Long:  "Manage go-commit configurations, validate existing configs, and generate templates",
 		Run: func(cmd *cobra.Command, args []string) {
 			// Validate config file path is provided
 			// 验证提供了配置文件路径
@@ -156,9 +156,9 @@ func createConfigExampleIndependentCommand(projectRoot string) *cobra.Command {
 	}
 }
 
-// previewConfigTemplate previews configuration template for current project
-// Generates and displays a sample configuration based on project Git remotes
-// Outputs formatted JSON template for simple copying and customization
+// previewConfigTemplate previews configuration template based on current project
+// Generates and displays a sample configuration from project Git remotes
+// Outputs formatted JSON template to enable simple copying and customization
 //
 // previewConfigTemplate 预览当前项目的配置模板
 // 基于项目 Git 远程生成并显示示例配置

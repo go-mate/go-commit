@@ -22,7 +22,7 @@ Quick Git commit app with auto Go changed code formatting capabilities.
 🎯 **Quick Commit Automation**: Intelligent staging, formatting, and committing with amend support  
 ⚡ **Auto Go Formatting**: Selective formatting of changed Go files with generated file exclusion  
 🔄 **Signature-info Management**: Automatic Git signature selection based on remote URL patterns  
-🌍 **Wildcard Patterns**: Sophisticated pattern matching for complex enterprise workflows  
+🌍 **Wildcard Patterns**: Sophisticated pattern matching with complex enterprise workflows  
 📋 **Configuration-Driven**: JSON-based configuration with score-based signature matching
 
 ## Installation
@@ -54,14 +54,14 @@ go-commit --amend --force -m "force amend message"
 
 Using a configuration file is adaptive but enables advanced features like automatic signature switching based on the project's remote URL.
 
-To get started, you can generate a configuration template based on your current git remote:
+To get started, you can generate a configuration template based on the current git remote:
 
 ```bash
 # This creates a go-commit-config.json in current DIR
 go-commit config example
 ```
 
-This file allows you to define signatures for different git remotes. It looks like this:
+This file allows you to define signatures with different git remotes:
 
 ```json
 {
@@ -96,7 +96,7 @@ Once setting up the configuration, you can validate it:
 go-commit config -c /path/to/go-commit-config.json
 ```
 
-More advanced use cases. See the [configuration examples](internal/examples/).
+See the [configuration examples](internal/examples/) with advanced use cases.
 
 ## Recommended Aliases
 
@@ -127,37 +127,52 @@ gca -m "force update pushed to remote" --force
 ### Advanced Usage Examples
 
 ```bash
-# Stage changes without committing (useful for testing)
+# Stage changes without committing (when testing)
 go-commit --no-commit --format-go
 
 # Auto-format Go files and commit with auto-signature
 go-commit -m "improve code format" --format-go --auto-sign
 
-# Commit with specific user info (overrides config)
-go-commit -u "John Doe" -e "john@company.com" -m "hotfix" --format-go
+# Commit with specific username info (overrides config)
+go-commit -u "John Doe" -e "john@corp.com" -m "hotfix" --format-go
 
-# Use mailbox instead of eddress for better semantics
-go-commit --mailbox "developer@team.com" -m "feature update" --format-go
+# Use mailbox instead of eddress with improved semantics
+go-commit --mailbox "dev@team.com" -m "feature update" --format-go
 
 # Configuration-driven commit (automatic signature based on remote)
 go-commit -c ~/go-commit-config.json -m "automated commit" --format-go
 ```
 
-<!-- TEMPLATE (EN) BEGIN: STANDARD PROJECT FOOTER -->
-<!-- VERSION 2025-09-26 07:39:27.188023 +0000 UTC -->
+---
 
-## 📄 License
+## 🛠️ Development Notes
 
-MIT License. See [LICENSE](LICENSE).
+**Git Package Dependencies (Project-Specific Rule):**
+
+In this project, we enforce a strict separation between production and test code:
+
+- **Production code**: Use ONLY `gogit` (github.com/go-xlan/gogit) - provides object-based Git operations
+- **Test code**: Use `gitgo` (github.com/go-xlan/gitgo) - provides chainable operations to set up test conditions
+
+⚠️ **Important**: Do NOT use `gitgo` in production logic code. This rule applies to this project alone to maintain clean separation of concerns.
 
 ---
 
-## 🤝 Contributing
+<!-- TEMPLATE (EN) BEGIN: STANDARD PROJECT FOOTER -->
+<!-- VERSION 2025-11-25 03:52:28.131064 +0000 UTC -->
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE).
+
+---
+
+## 💬 Contact & Feedback
 
 Contributions are welcome! Report bugs, suggest features, and contribute code:
 
-- 🐛 **Found a mistake?** Open an issue on GitHub with reproduction steps
-- 💡 **Have a feature idea?** Create an issue to discuss the suggestion
+- 🐛 **Mistake reports?** Open an issue on GitHub with reproduction steps
+- 💡 **Fresh ideas?** Create an issue to discuss
 - 📖 **Documentation confusing?** Report it so we can improve
 - 🚀 **Need new features?** Share the use cases to help us understand requirements
 - ⚡ **Performance issue?** Help us optimize through reporting slow operations
@@ -178,7 +193,7 @@ New code contributions, follow this process:
 4. **Branch**: Create a feature branch (`git checkout -b feature/xxx`).
 5. **Code**: Implement the changes with comprehensive tests
 6. **Testing**: (Golang project) Ensure tests pass (`go test ./...`) and follow Go code style conventions
-7. **Documentation**: Update documentation to support client-facing changes and use significant commit messages
+7. **Documentation**: Update documentation to support client-facing changes
 8. **Stage**: Stage changes (`git add .`)
 9. **Commit**: Commit changes (`git commit -m "Add feature xxx"`) ensuring backward compatible code
 10. **Push**: Push to the branch (`git push origin feature/xxx`).

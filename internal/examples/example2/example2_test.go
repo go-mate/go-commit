@@ -1,3 +1,10 @@
+// Package example2_test demonstrates work vs personal project separation
+// Tests signature matching between enterprise work projects and personal side projects
+// Validates automatic identity switching based on Git remote patterns
+//
+// example2_test 演示工作项目与个人项目的分离
+// 测试企业工作项目和个人兴趣项目之间的签名匹配
+// 验证基于 Git 远程模式的自动身份切换
 package example2_test
 
 import (
@@ -14,6 +21,11 @@ import (
 	"github.com/yyle88/runpath"
 )
 
+// TestLoadExample2Config validates configuration file loading with work and personal signatures
+// Tests that configuration contains correct signature entries with proper names
+//
+// TestLoadExample2Config 验证配置文件加载和工作及个人签名
+// 测试配置包含正确的签名条目和适当的名称
 func TestLoadExample2Config(t *testing.T) {
 	configPath := runpath.PARENT.Join("simple-personal-config.json")
 	config := commitmate.LoadConfig(configPath)
@@ -24,6 +36,11 @@ func TestLoadExample2Config(t *testing.T) {
 	require.Equal(t, "personal-gitlab", config.Signatures[2].Name)
 }
 
+// TestExample2WorkPatternMatching validates pattern matching in work and personal contexts
+// Tests matching enterprise GitHub, work GitLab, and personal GitHub/GitLab projects
+//
+// TestExample2WorkPatternMatching 验证工作和个人环境中的模式匹配
+// 测试企业 GitHub、工作 GitLab 和个人 GitHub/GitLab 项目的匹配
 func TestExample2WorkPatternMatching(t *testing.T) {
 	configPath := runpath.PARENT.Join("simple-personal-config.json")
 	config := commitmate.LoadConfig(configPath)
@@ -54,9 +71,14 @@ func TestExample2WorkPatternMatching(t *testing.T) {
 	require.Equal(t, "bob-dev", signature.Username)
 }
 
+// TestExample2GitCommitWorkProject tests commit workflow with work project signature
+// Creates enterprise repository, applies work configuration, and verifies commit metadata
+//
+// TestExample2GitCommitWorkProject 测试工作项目签名的提交工作流程
+// 创建企业仓库，应用工作配置，并验证提交元数据
 func TestExample2GitCommitWorkProject(t *testing.T) {
 	tempDIR := rese.V1(os.MkdirTemp("", "example2-work-test-*"))
-	defer func() { must.Done(os.RemoveAll(tempDIR)) }()
+	t.Cleanup(func() { must.Done(os.RemoveAll(tempDIR)) })
 
 	execConfig := osexec.NewExecConfig().WithPath(tempDIR)
 	rese.V1(execConfig.Exec("git", "init"))
@@ -101,9 +123,14 @@ func ProcessData(ctx context.Context)error{
 	require.Equal(t, "bob.smith@company.com", string(authorEmail))
 }
 
+// TestExample2GitCommitPersonalProject tests commit workflow with personal project signature
+// Creates personal repository, applies personal configuration, and verifies commit metadata
+//
+// TestExample2GitCommitPersonalProject 测试个人项目签名的提交工作流程
+// 创建个人仓库，应用个人配置，并验证提交元数据
 func TestExample2GitCommitPersonalProject(t *testing.T) {
 	tempDIR := rese.V1(os.MkdirTemp("", "example2-personal-test-*"))
-	defer func() { must.Done(os.RemoveAll(tempDIR)) }()
+	t.Cleanup(func() { must.Done(os.RemoveAll(tempDIR)) })
 
 	execConfig := osexec.NewExecConfig().WithPath(tempDIR)
 	rese.V1(execConfig.Exec("git", "init"))

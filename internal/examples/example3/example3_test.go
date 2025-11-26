@@ -1,3 +1,10 @@
+// Package example3_test demonstrates multi-client freelance configuration patterns
+// Tests signature management across multiple client projects and personal work
+// Validates complex identity switching in freelance and consulting scenarios
+//
+// example3_test 演示多客户自由职业配置模式
+// 测试跨多个客户项目和个人工作的签名管理
+// 验证自由职业和咨询场景中的复杂身份切换
 package example3_test
 
 import (
@@ -13,6 +20,11 @@ import (
 	"github.com/yyle88/runpath"
 )
 
+// TestLoadExample3Config validates multi-client configuration file loading
+// Tests that configuration contains expected client and personal signature entries
+//
+// TestLoadExample3Config 验证多客户配置文件加载
+// 测试配置包含预期的客户和个人签名条目
 func TestLoadExample3Config(t *testing.T) {
 	configPath := runpath.PARENT.Join("multi-client-config.json")
 	config := commitmate.LoadConfig(configPath)
@@ -24,6 +36,11 @@ func TestLoadExample3Config(t *testing.T) {
 	require.Equal(t, "consulting-work", config.Signatures[3].Name)
 }
 
+// TestExample3ClientAlphaMatching validates pattern matching when working with client alpha projects
+// Tests matching GitHub and GitLab repositories specific to client alpha
+//
+// TestExample3ClientAlphaMatching 验证与客户 alpha 项目工作时的模式匹配
+// 测试特定于客户 alpha 的 GitHub 和 GitLab 仓库匹配
 func TestExample3ClientAlphaMatching(t *testing.T) {
 	configPath := runpath.PARENT.Join("multi-client-config.json")
 	config := commitmate.LoadConfig(configPath)
@@ -41,6 +58,11 @@ func TestExample3ClientAlphaMatching(t *testing.T) {
 	require.Equal(t, "client-alpha", signature.Name)
 }
 
+// TestExample3ClientBetaMatching validates pattern matching when working with client beta projects
+// Tests matching GitLab and custom Git repositories specific to client beta
+//
+// TestExample3ClientBetaMatching 验证与客户 beta 项目工作时的模式匹配
+// 测试特定于客户 beta 的 GitLab 和自定义 Git 仓库匹配
 func TestExample3ClientBetaMatching(t *testing.T) {
 	configPath := runpath.PARENT.Join("multi-client-config.json")
 	config := commitmate.LoadConfig(configPath)
@@ -58,6 +80,11 @@ func TestExample3ClientBetaMatching(t *testing.T) {
 	require.Equal(t, "client-beta", signature.Name)
 }
 
+// TestExample3PersonalProjectsMatching validates pattern matching with personal side projects
+// Tests matching personal GitHub and GitLab repositories outside client work
+//
+// TestExample3PersonalProjectsMatching 验证个人兴趣项目的模式匹配
+// 测试客户工作之外的个人 GitHub 和 GitLab 仓库匹配
 func TestExample3PersonalProjectsMatching(t *testing.T) {
 	configPath := runpath.PARENT.Join("multi-client-config.json")
 	config := commitmate.LoadConfig(configPath)
@@ -75,9 +102,14 @@ func TestExample3PersonalProjectsMatching(t *testing.T) {
 	require.Equal(t, "personal-projects", signature.Name)
 }
 
+// TestExample3GitCommitClientAlpha tests commit workflow with client alpha signature
+// Creates client alpha repository, applies configuration, and verifies commit metadata
+//
+// TestExample3GitCommitClientAlpha 测试客户 alpha 签名的提交工作流程
+// 创建客户 alpha 仓库，应用配置，并验证提交元数据
 func TestExample3GitCommitClientAlpha(t *testing.T) {
 	tempDIR := rese.V1(os.MkdirTemp("", "example3-alpha-test-*"))
-	defer func() { must.Done(os.RemoveAll(tempDIR)) }()
+	t.Cleanup(func() { must.Done(os.RemoveAll(tempDIR)) })
 
 	execConfig := osexec.NewExecConfig().WithPath(tempDIR)
 	rese.V1(execConfig.Exec("git", "init"))
@@ -115,9 +147,14 @@ func ValidateToken(token string)bool{
 	require.Equal(t, "charlie@client-alpha.com", string(authorEmail))
 }
 
+// TestExample3GitCommitPersonalProject tests commit workflow with personal project signature
+// Creates personal repository, applies configuration, and verifies commit metadata
+//
+// TestExample3GitCommitPersonalProject 测试个人项目签名的提交工作流程
+// 创建个人仓库，应用配置，并验证提交元数据
 func TestExample3GitCommitPersonalProject(t *testing.T) {
 	tempDIR := rese.V1(os.MkdirTemp("", "example3-personal-test-*"))
-	defer func() { must.Done(os.RemoveAll(tempDIR)) }()
+	t.Cleanup(func() { must.Done(os.RemoveAll(tempDIR)) })
 
 	execConfig := osexec.NewExecConfig().WithPath(tempDIR)
 	rese.V1(execConfig.Exec("git", "init"))
@@ -159,9 +196,14 @@ func main(){
 	require.Equal(t, "charlie.freelancer@protonmail.com", string(authorEmail))
 }
 
+// TestExample3GitCommitConsultingWork tests commit workflow with consulting work signature
+// Creates consulting repository, applies configuration, and verifies commit metadata
+//
+// TestExample3GitCommitConsultingWork 测试咨询工作签名的提交工作流程
+// 创建咨询仓库，应用配置，并验证提交元数据
 func TestExample3GitCommitConsultingWork(t *testing.T) {
 	tempDIR := rese.V1(os.MkdirTemp("", "example3-consulting-test-*"))
-	defer func() { must.Done(os.RemoveAll(tempDIR)) }()
+	t.Cleanup(func() { must.Done(os.RemoveAll(tempDIR)) })
 
 	execConfig := osexec.NewExecConfig().WithPath(tempDIR)
 	rese.V1(execConfig.Exec("git", "init"))

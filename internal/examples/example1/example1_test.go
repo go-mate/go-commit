@@ -1,3 +1,10 @@
+// Package example1_test demonstrates multi-identity configuration patterns
+// Tests various Git signature matching scenarios with different remote patterns
+// Validates configuration loading and automatic signature resolution based on remote URLs
+//
+// example1_test 演示多身份配置模式
+// 测试不同远程模式下的各种 Git 签名匹配场景
+// 验证配置加载和基于远程 URL 的自动签名解析
 package example1_test
 
 import (
@@ -6,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/go-mate/go-commit/commitmate"
+	"github.com/go-xlan/gitgo"
 	"github.com/go-xlan/gogit"
 	"github.com/stretchr/testify/require"
 	"github.com/yyle88/must"
@@ -14,6 +22,11 @@ import (
 	"github.com/yyle88/runpath"
 )
 
+// TestLoadExample1Config validates configuration file loading with multiple signatures
+// Tests that configuration contains expected signature entries with correct names
+//
+// TestLoadExample1Config 验证配置文件加载和多个签名
+// 测试配置包含预期的签名条目和正确的名称
 func TestLoadExample1Config(t *testing.T) {
 	// Get path to the config file in same DIR
 	// 获取同一 DIR 中配置文件的路径
@@ -32,6 +45,11 @@ func TestLoadExample1Config(t *testing.T) {
 	require.Equal(t, "fallback-default", config.Signatures[3].Name)
 }
 
+// TestExample1PatternMatching validates pattern matching across multiple Git hosting platforms
+// Tests matching GitHub personal projects, GitLab projects, and fallback scenarios
+//
+// TestExample1PatternMatching 验证跨多个 Git 托管平台的模式匹配
+// 测试 GitHub 个人项目、GitLab 项目和兜底场景的匹配
 func TestExample1PatternMatching(t *testing.T) {
 	// Load config for testing
 	// 加载配置进行测试
@@ -67,20 +85,25 @@ func TestExample1PatternMatching(t *testing.T) {
 	require.Equal(t, "alice", signature.Username)
 }
 
+// TestExample1GitCommitWithSignature tests complete commit workflow with automatic signature resolution
+// Creates test repository, applies project configuration, and verifies commit metadata
+//
+// TestExample1GitCommitWithSignature 测试完整的提交工作流程和自动签名解析
+// 创建测试仓库，应用项目配置，并验证提交元数据
 func TestExample1GitCommitWithSignature(t *testing.T) {
 	// Create temp DIR for test repository
 	// 为测试仓库创建临时 DIR
 	tempDIR := rese.V1(os.MkdirTemp("", "example1-test-*"))
-	defer func() { must.Done(os.RemoveAll(tempDIR)) }()
+	t.Cleanup(func() { must.Done(os.RemoveAll(tempDIR)) })
 
-	// Initialize git repository using osexec
-	// 使用 osexec 初始化 git 仓库
-	execConfig := osexec.NewExecConfig().WithPath(tempDIR)
-	rese.V1(execConfig.Exec("git", "init"))
+	// Initialize git repository using gitgo
+	// 使用 gitgo 初始化 git 仓库
+	gcm := gitgo.New(tempDIR)
+	gcm.Init().MustDone()
 
 	// Set up git remote for GitHub personal project
-	// 为 GitHub 个人项目设置 git 远程
-	rese.V1(execConfig.Exec("git", "remote", "add", "origin", "git@github.com:alice/test-project.git"))
+	// 设置 GitHub 个人项目的 git 远程
+	gcm.RemoteAdd("origin", "git@github.com:alice/test-project.git").MustDone()
 
 	// Create test file
 	// 创建测试文件
@@ -128,11 +151,12 @@ func main() {
 
 	// Verify commit was created with correct message
 	// 验证提交已创建且包含正确消息
-	output := rese.V1(execConfig.Exec("git", "log", "-1", "--pretty=format:%s"))
-	require.Equal(t, "Add main.go with hello message", string(output))
+	commitMsg := rese.V1(gcm.GetCommitMessage("HEAD"))
+	require.Equal(t, "Add main.go with hello message", commitMsg)
 
-	// Verify commit author
-	// 验证提交作者
+	// Verify commit author using osexec (gitgo doesn't have author info methods yet)
+	// 使用 osexec 验证提交作者（gitgo 暂时还没有获取作者信息的方法）
+	execConfig := osexec.NewExecConfig().WithPath(tempDIR)
 	authorName := rese.V1(execConfig.Exec("git", "log", "-1", "--pretty=format:%an"))
 	authorEmail := rese.V1(execConfig.Exec("git", "log", "-1", "--pretty=format:%ae"))
 	require.Equal(t, "alice", string(authorName))
