@@ -19,7 +19,7 @@ import (
 // 提供带有用户名和邮箱设置占位符的启动配置
 // 将 JSON 模板输出到 stdout 以便复制和自定义
 func GenerateConfigTemplate(projectRoot string) *CommitConfig {
-	zaplog.SUG.Debugln("generating config template for project:", projectRoot)
+	zaplog.SUG.Debugln("generating config template based on project:", projectRoot)
 
 	signatureConfig := generateSignatureTemplate(projectRoot)
 	return &CommitConfig{
@@ -55,7 +55,7 @@ func generateSignatureTemplate(projectRoot string) *SignatureConfig {
 				break
 			}
 		}
-		// Fall back to first remote if no origin
+		// Default to first remote when no origin exists
 		// 如果没有 origin 则回退到第一个远程
 		if remoteURL == "" && len(remotes[0].Config().URLs) > 0 {
 			remoteConfig := remotes[0].Config()
@@ -63,7 +63,8 @@ func generateSignatureTemplate(projectRoot string) *SignatureConfig {
 		}
 	}
 
-	// 假如没有找打远端的地址就给个默认的样例就行
+	// Use default template when no remote URL is found
+	// 假如没有找到远端的地址就给个默认的样例就行
 	remoteURL = zerotern.VV(remoteURL, "git@github.com:username/repo.git")
 
 	// Create template configuration based on detected remote
@@ -77,7 +78,7 @@ func generateSignatureTemplate(projectRoot string) *SignatureConfig {
 	return signatureConfig
 }
 
-// generateConfigName creates a descriptive name for the configuration based on remote URL
+// generateConfigName creates a descriptive name of the configuration based on remote URL
 // 基于远程 URL 为配置创建描述性名称
 func generateConfigName(remoteURL string) string {
 	slashIdx := strings.LastIndex(remoteURL, "/")

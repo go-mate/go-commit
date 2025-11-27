@@ -30,6 +30,10 @@ func setupTestRepo() (string, func()) {
 	gcm := gitgo.New(tempDIR)
 	gcm.Init().MustDone()
 
+	// Configure git username and mailbox - must succeed
+	rese.V1(osexec.NewExecConfig().WithPath(tempDIR).Exec("git", "config", "user.name", "Test Username"))
+	rese.V1(osexec.NewExecConfig().WithPath(tempDIR).Exec("git", "config", "user.email", "test@example.com"))
+
 	// Create initial commit to make it a valid repo - must succeed
 	testFile := filepath.Join(tempDIR, "README.md")
 	must.Done(os.WriteFile(testFile, []byte("# Test Repo\n"), 0644))
@@ -563,11 +567,6 @@ func TestCommitConfig_MatchSignature_Priority(t *testing.T) {
 func TestLoadConfig_FileExists(t *testing.T) {
 	tempDIR := rese.V1(os.MkdirTemp("", "config-test-*"))
 	t.Cleanup(func() { must.Done(os.RemoveAll(tempDIR)) })
-
-	// Change to temp DIR so config is found
-	originalDir := rese.V1(os.Getwd())
-	t.Cleanup(func() { must.Done(os.Chdir(originalDir)) })
-	must.Done(os.Chdir(tempDIR))
 
 	testConfig := &CommitConfig{
 		Signatures: []*SignatureConfig{

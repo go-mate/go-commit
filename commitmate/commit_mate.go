@@ -1,7 +1,7 @@
 // Package commitmate: Advanced Git commit automation engine with intelligent Go formatting
 // Features smart commit workflows with auto Go source code formatting and remote-based signature-info selection
 // Provides seamless staging, formatting, committing, and amend operations with configuration-driven signatures
-// Supports wildcard pattern matching for Git remote URLs to auto-select appropriate commit signatures
+// Supports wildcard pattern matching on Git remote URLs to auto-select appropriate commit signatures
 //
 // commitmate: 高级 Git 提交自动化引擎，带有智能 Go 格式化功能
 // 具有智能提交工作流程，包含自动 Go 源代码格式化和基于远程的身份选择
@@ -60,19 +60,19 @@ type CommitFlags struct {
 func (f *CommitFlags) ValidateFlags() []string {
 	var warnings []string
 
-	// Check for force flag without amend
+	// Check whether force flag is set without amend
 	// 检查没有 amend 的强制标志
 	if f.IsForce && !f.IsAmend {
 		warnings = append(warnings, "force flag set but amend is disabled - force has no effect")
 	}
 
-	// Check for commit message when not committing
+	// Check whether commit message exists when not committing
 	// 检查不提交时的提交消息
 	if f.NoCommit && f.Message != "" {
 		warnings = append(warnings, "commit message provided but no-commit flag is set")
 	}
 
-	// Check for missing authentication info (when not using AutoSign)
+	// Check whether authentication info is missing (when not using AutoSign)
 	// 检查缺失的身份验证信息（当不使用 AutoSign 时）
 	if !f.AutoSign && f.Username == "" && f.Mailbox == "" && f.Eddress == "" {
 		warnings = append(warnings, "no authentication info provided and auto-sign disabled")
@@ -93,14 +93,14 @@ func GitCommit(projectRoot string, commitFlags *CommitFlags) error {
 	// 记录项目上下文和提交配置
 	zaplog.SUG.Debugln(projectRoot, neatjsons.S(commitFlags))
 
-	// Initialize Git client for the project
+	// Initialize Git client with the project
 	// 为项目初始化 Git 客户端
 	client, err := gogit.New(projectRoot)
 	if err != nil {
 		return erero.Wro(err)
 	}
 
-	// Check initial repo status
+	// Check repo status at start
 	// 检查初始代码库状态
 	status, err := client.Status()
 	if err != nil {
@@ -108,7 +108,7 @@ func GitCommit(projectRoot string, commitFlags *CommitFlags) error {
 	}
 	zaplog.SUG.Debugln(neatjsons.S(status))
 
-	// Stage all changes for commit
+	// Stage changes before commit
 	// 为提交暂存所有更改
 	if err := client.AddAll(); err != nil {
 		return erero.Wro(err)
@@ -338,7 +338,7 @@ func (f *CommitFlags) ApplySignature(signature *SignatureConfig) {
 
 // SignatureConfig represents a Git signature configuration with advanced pattern matching
 // Maps Git remote URL patterns to corresponding account username and mailbox settings
-// Supports sophisticated wildcard matching for flexible remote pattern definitions
+// Supports sophisticated wildcard matching with flexible remote pattern definitions
 // Enables automatic signature-info switching based on repo remote configurations
 //
 // SignatureConfig 代表具有高级模式匹配的 Git 签名配置
@@ -346,10 +346,10 @@ func (f *CommitFlags) ApplySignature(signature *SignatureConfig) {
 // 支持复杂的通配符匹配以实现灵活的远程模式定义
 // 基于代码库远程配置实现自动身份切换
 type SignatureConfig struct {
-	Name           string   `json:"name"`           // Config name for reference // 配置名称用于引用
-	Username       string   `json:"username"`       // Git username for commits // 用于提交的 Git 用户名
-	Mailbox        string   `json:"mailbox"`        // Git mailbox for commits (preferred) // 用于提交的 Git 邮箱（优先）
-	Eddress        string   `json:"eddress"`        // Git mailbox for commits (fallback) // 用于提交的 Git 邮箱（备选）
+	Name           string   `json:"name"`           // Config name as reference // 配置名称用于引用
+	Username       string   `json:"username"`       // Git username in commits // 用于提交的 Git 用户名
+	Mailbox        string   `json:"mailbox"`        // Git mailbox in commits (preferred) // 用于提交的 Git 邮箱（优先）
+	Eddress        string   `json:"eddress"`        // Git mailbox in commits (fallback) // 用于提交的 Git 邮箱（备选）
 	RemotePatterns []string `json:"remotePatterns"` // Remote URL patterns (supports wildcards) // 远程 URL 模式（支持通配符）
 }
 

@@ -66,7 +66,7 @@ func MatchRemotePattern(pattern, remoteURL string) int {
 // 针对复杂 URL 模式实现高性能递归匹配算法
 // 如果 remoteURL 匹配指定的通配符模式则返回 true
 func matchGlob(remoteURL, pattern string) bool {
-	// Quick exact match check for performance
+	// Quick exact match check to improve performance
 	// 快速精确匹配检查以提升性能
 	if remoteURL == pattern {
 		return true

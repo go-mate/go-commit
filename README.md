@@ -40,13 +40,13 @@ go-commit -m "some commit message" --format-go
 # With signature info
 go-commit -u "username" -e "example@example.com" -m "message" --format-go
 
-# Use configuration file for auto choose signature info
+# Use configuration file to auto choose signature info
 go-commit -c "xx/xx/go-commit-config.json" -m "commit message" --format-go
 
 # Amend previous commit
 go-commit --amend -m "updated message" --format-go
 
-# Force amend (even pushed to origin)
+# Force amend (even when pushed to origin)
 go-commit --amend --force -m "force amend message"
 ```
 
@@ -67,13 +67,13 @@ This file allows you to define signatures with different git remotes:
 {
   "signatures": [
     {
-      "name": "work-github", "username": "work-user", "eddress": "work@company.com", "remotePatterns": [
-      "git@github.company.com:*"
+      "name": "work-github", "username": "work-man", "eddress": "work@corp.com", "remotePatterns": [
+      "git@github.corp.com:*"
     ]
     },
     {
-      "name": "play-github", "username": "play-user", "eddress": "play@example.com", "remotePatterns": [
-      "git@github.com:play-user/*"
+      "name": "home-github", "username": "home-dev", "eddress": "home@example.com", "remotePatterns": [
+      "git@github.com:home-dev/*"
     ]
     }
   ]
@@ -82,8 +82,8 @@ This file allows you to define signatures with different git remotes:
 
 Examples:
 
-- Project A with remote `git@github.company.com:team/project-a` → auto commits as work-user(work@company.com)
-- Project B with remote `git@github.com:play-user/project-b` → auto commits as play-user(play@example.com)
+- Project A with remote `git@github.corp.com:team/project-a` → auto commits as work-man(work@corp.com)
+- Project B with remote `git@github.com:home-dev/project-b` → auto commits as home-dev(home@example.com)
 
 This automatic switching makes multi-project workflow much more convenient.
 
@@ -96,7 +96,7 @@ Once setting up the configuration, you can validate it:
 go-commit config -c /path/to/go-commit-config.json
 ```
 
-See the [configuration examples](internal/examples/) with advanced use cases.
+See the [configuration examples](internal/examples/) on advanced use cases.
 
 ## Recommended Aliases
 
@@ -117,8 +117,12 @@ gcm -m "add new feature"
 # Amend last commit
 gca
 
-# Change last commit
+# Change last commit message
 gca -m "new commit message"
+
+# Amend commit when signature info changes (even without code changes)
+# Note: gca amends the commit if username/mailbox differs from previous commit
+gca
 
 # Force amend (dangerous - use with caution)
 gca -m "force update pushed to remote" --force
@@ -127,7 +131,7 @@ gca -m "force update pushed to remote" --force
 ### Advanced Usage Examples
 
 ```bash
-# Stage changes without committing (when testing)
+# Stage changes without committing (during testing)
 go-commit --no-commit --format-go
 
 # Auto-format Go files and commit with auto-signature
@@ -136,7 +140,7 @@ go-commit -m "improve code format" --format-go --auto-sign
 # Commit with specific username info (overrides config)
 go-commit -u "John Doe" -e "john@corp.com" -m "hotfix" --format-go
 
-# Use mailbox instead of eddress with improved semantics
+# Use mailbox instead of eddress (improved semantics)
 go-commit --mailbox "dev@team.com" -m "feature update" --format-go
 
 # Configuration-driven commit (automatic signature based on remote)
@@ -154,7 +158,7 @@ In this project, we enforce a strict separation between production and test code
 - **Production code**: Use ONLY `gogit` (github.com/go-xlan/gogit) - provides object-based Git operations
 - **Test code**: Use `gitgo` (github.com/go-xlan/gitgo) - provides chainable operations to set up test conditions
 
-⚠️ **Important**: Do NOT use `gitgo` in production logic code. This rule applies to this project alone to maintain clean separation of concerns.
+⚠️ **Important**: Do NOT use `gitgo` in production logic code. This rule applies to this project to maintain clean separation of concerns.
 
 ---
 
@@ -173,12 +177,12 @@ Contributions are welcome! Report bugs, suggest features, and contribute code:
 
 - 🐛 **Mistake reports?** Open an issue on GitHub with reproduction steps
 - 💡 **Fresh ideas?** Create an issue to discuss
-- 📖 **Documentation confusing?** Report it so we can improve
+- 📖 **Documentation confusing?** Report it so we can enhance it
 - 🚀 **Need new features?** Share the use cases to help us understand requirements
-- ⚡ **Performance issue?** Help us optimize through reporting slow operations
+- ⚡ **Performance issue?** Help us optimize via reporting slow operations
 - 🔧 **Configuration problem?** Ask questions about complex setups
-- 📢 **Follow project progress?** Watch the repo to get new releases and features
-- 🌟 **Success stories?** Share how this package improved the workflow
+- 📢 **Track project progress?** Watch the repo to get new releases and features
+- 🌟 **Success stories?** Share how this package enhanced the workflow
 - 💬 **Feedback?** We welcome suggestions and comments
 
 ---
@@ -192,7 +196,7 @@ New code contributions, follow this process:
 3. **Navigate**: Navigate to the cloned project (`cd repo-name`)
 4. **Branch**: Create a feature branch (`git checkout -b feature/xxx`).
 5. **Code**: Implement the changes with comprehensive tests
-6. **Testing**: (Golang project) Ensure tests pass (`go test ./...`) and follow Go code style conventions
+6. **Testing**: (Golang project) Ensure tests pass (`go test ./...`) and adhere to Go code style conventions
 7. **Documentation**: Update documentation to support client-facing changes
 8. **Stage**: Stage changes (`git add .`)
 9. **Commit**: Commit changes (`git commit -m "Add feature xxx"`) ensuring backward compatible code

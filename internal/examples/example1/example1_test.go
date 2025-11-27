@@ -151,8 +151,8 @@ func main() {
 
 	// Verify commit was created with correct message
 	// 验证提交已创建且包含正确消息
-	commitMsg := rese.V1(gcm.GetCommitMessage("HEAD"))
-	require.Equal(t, "Add main.go with hello message", commitMsg)
+	commitMessage := rese.V1(gcm.GetCommitMessage("HEAD"))
+	require.Equal(t, "Add main.go with hello message", commitMessage)
 
 	// Verify commit author using osexec (gitgo doesn't have author info methods yet)
 	// 使用 osexec 验证提交作者（gitgo 暂时还没有获取作者信息的方法）

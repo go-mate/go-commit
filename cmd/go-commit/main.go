@@ -87,7 +87,7 @@ func createRootCommand(projectRoot string, commitFlags *commitmate.CommitFlags, 
 		},
 	}
 
-	// Configure command line flags for commit customization
+	// Configure command line flags to enable commit customization
 	// 配置用于提交自定义的命令行标志
 	rootCmd.PersistentFlags().StringVarP(&commitFlags.Username, "username", "u", "", "git username")
 	rootCmd.PersistentFlags().StringVarP(&commitFlags.Message, "message", "m", "", "commit message")
@@ -108,7 +108,7 @@ func createRootCommand(projectRoot string, commitFlags *commitmate.CommitFlags, 
 func createConfigCommand(projectRoot string, commitFlags *commitmate.CommitFlags, appConfig *AppConfig) *cobra.Command {
 	return &cobra.Command{
 		Use:   "config",
-		Short: "Configuration management for go-commit",
+		Short: "Configuration management of go-commit",
 		Long:  "Manage go-commit configurations, validate existing configs, and generate templates",
 		Run: func(cmd *cobra.Command, args []string) {
 			// Validate config file path is provided
@@ -135,7 +135,7 @@ func createConfigCommand(projectRoot string, commitFlags *commitmate.CommitFlags
 func createConfigExampleCommand(projectRoot string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "example",
-		Short: "Generate configuration template for current project",
+		Short: "Generate configuration template with current project",
 		Long:  "Generate a go-commit configuration template based on current project's Git remote URL",
 		Run: func(cmd *cobra.Command, args []string) {
 			previewConfigTemplate(projectRoot)
@@ -148,7 +148,7 @@ func createConfigExampleCommand(projectRoot string) *cobra.Command {
 func createConfigExampleIndependentCommand(projectRoot string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "config-example",
-		Short: "Generate configuration template for current project",
+		Short: "Generate configuration template with current project",
 		Long:  "Generate a go-commit configuration template based on current project's Git remote URL",
 		Run: func(cmd *cobra.Command, args []string) {
 			previewConfigTemplate(projectRoot)
