@@ -485,13 +485,13 @@ func TestMatchPattern_WildcardSpecificity(t *testing.T) {
 func TestCommitConfig_MatchSignature_ExactMatch(t *testing.T) {
 	config := &CommitConfig{
 		Signatures: []*SignatureConfig{
-			&SignatureConfig{
+			{
 				Name:           "exact-match",
 				Username:       "exact-user",
 				Eddress:        "exact@example.com",
 				RemotePatterns: []string{"git@github.com:user/repo.git"},
 			},
-			&SignatureConfig{
+			{
 				Name:           "wildcard-match",
 				Username:       "wildcard-user",
 				Eddress:        "wildcard@example.com",
@@ -509,7 +509,7 @@ func TestCommitConfig_MatchSignature_ExactMatch(t *testing.T) {
 func TestCommitConfig_MatchSignature_WildcardMatch(t *testing.T) {
 	config := &CommitConfig{
 		Signatures: []*SignatureConfig{
-			&SignatureConfig{
+			{
 				Name:           "github-match",
 				Username:       "github-user",
 				Eddress:        "github@example.com",
@@ -527,7 +527,7 @@ func TestCommitConfig_MatchSignature_WildcardMatch(t *testing.T) {
 func TestCommitConfig_MatchSignature_NoMatch(t *testing.T) {
 	config := &CommitConfig{
 		Signatures: []*SignatureConfig{
-			&SignatureConfig{
+			{
 				Name:           "github-match",
 				Username:       "github-user",
 				Eddress:        "github@example.com",
@@ -543,7 +543,7 @@ func TestCommitConfig_MatchSignature_NoMatch(t *testing.T) {
 func TestCommitConfig_MatchSignature_Priority(t *testing.T) {
 	config := &CommitConfig{
 		Signatures: []*SignatureConfig{
-			&SignatureConfig{
+			{
 				Name:           "general-github",
 				Username:       "general-user",
 				Eddress:        "general@example.com",
@@ -570,7 +570,7 @@ func TestLoadConfig_FileExists(t *testing.T) {
 
 	testConfig := &CommitConfig{
 		Signatures: []*SignatureConfig{
-			&SignatureConfig{
+			{
 				Name:           "test-signature-info",
 				Username:       "test-user",
 				Eddress:        "test@example.com",
@@ -606,7 +606,7 @@ func TestApplyProjectConfig_WithRemoteMatching(t *testing.T) {
 	// 2. 环境配置 - 创建测试配置
 	testConfig := &CommitConfig{
 		Signatures: []*SignatureConfig{
-			&SignatureConfig{
+			{
 				Name:           "github-signature-info",
 				Username:       "github-user",
 				Eddress:        "github@example.com",
@@ -636,7 +636,7 @@ func TestApplyProjectConfig_ConfigFlagOverride(t *testing.T) {
 	// 2. 环境配置 - 创建测试配置
 	testConfig := &CommitConfig{
 		Signatures: []*SignatureConfig{
-			&SignatureConfig{
+			{
 				Name:           "github-signature-info",
 				Username:       "github-user",
 				Eddress:        "github@example.com",

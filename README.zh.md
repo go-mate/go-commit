@@ -12,9 +12,11 @@
 ---
 
 <!-- TEMPLATE (ZH) BEGIN: LANGUAGE NAVIGATION -->
+
 ## 英文文档
 
 [ENGLISH README](README.md)
+
 <!-- TEMPLATE (ZH) END: LANGUAGE NAVIGATION -->
 
 ## 核心特性
@@ -67,14 +69,16 @@ go-commit config example
 {
   "signatures": [
     {
-      "name": "work-github", "username": "work-man", "eddress": "work@corp.com", "remotePatterns": [
-      "git@github.corp.com:*"
-    ]
+      "name": "work-github",
+      "username": "work-man",
+      "eddress": "work@corp.com",
+      "remotePatterns": ["git@github.corp.com:*"]
     },
     {
-      "name": "home-github", "username": "home-dev", "eddress": "home@example.com", "remotePatterns": [
-      "git@github.com:home-dev/*"
-    ]
+      "name": "home-github",
+      "username": "home-dev",
+      "eddress": "home@example.com",
+      "remotePatterns": ["git@github.com:home-dev/*"]
     }
   ]
 }
@@ -181,7 +185,7 @@ MIT 许可证 - 详见 [LICENSE](LICENSE)。
 - 🚀 **需要功能？** 分享使用场景，帮助理解需求
 - ⚡ **性能瓶颈？** 报告慢操作，协助解决性能问题
 - 🔧 **配置困扰？** 询问复杂设置的相关问题
-- 📢 **追踪进展？** 关注仓库以获取新版本和功能
+- 📢 **关注进展？** 关注仓库以获取新版本和功能
 - 🌟 **成功案例？** 分享这个包如何改善工作流程
 - 💬 **反馈意见？** 欢迎提出建议和意见
 
@@ -196,7 +200,7 @@ MIT 许可证 - 详见 [LICENSE](LICENSE)。
 3. **导航**：进入克隆的项目（`cd repo-name`）
 4. **分支**：创建功能分支（`git checkout -b feature/xxx`）
 5. **编码**：实现您的更改并编写全面的测试
-6. **测试**：（Golang 项目）确保测试通过（`go test ./...`）并遵守 Go 代码风格约定
+6. **测试**：（Golang 项目）确保测试通过（`go test ./...`）并遵循 Go 代码风格约定
 7. **文档**：面向用户的更改需要更新文档
 8. **暂存**：暂存更改（`git add .`）
 9. **提交**：提交更改（`git commit -m "Add feature xxx"`）确保向后兼容的代码
@@ -226,4 +230,4 @@ MIT 许可证 - 详见 [LICENSE](LICENSE)。
 
 ## GitHub 标星点赞
 
-[![Stargazers](https://starchart.cc/go-mate/go-commit.svg?variant=adaptive)](https://starchart.cc/go-mate/go-commit)
+[![标星点赞](https://starchart.cc/go-mate/go-commit.svg?variant=adaptive)](https://starchart.cc/go-mate/go-commit)

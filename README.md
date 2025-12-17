@@ -12,9 +12,11 @@ Quick Git commit app with auto Go changed code formatting capabilities.
 ---
 
 <!-- TEMPLATE (EN) BEGIN: LANGUAGE NAVIGATION -->
+
 ## CHINESE README
 
 [中文说明](README.zh.md)
+
 <!-- TEMPLATE (EN) END: LANGUAGE NAVIGATION -->
 
 ## Main Features
@@ -67,14 +69,16 @@ This file allows you to define signatures with different git remotes:
 {
   "signatures": [
     {
-      "name": "work-github", "username": "work-man", "eddress": "work@corp.com", "remotePatterns": [
-      "git@github.corp.com:*"
-    ]
+      "name": "work-github",
+      "username": "work-man",
+      "eddress": "work@corp.com",
+      "remotePatterns": ["git@github.corp.com:*"]
     },
     {
-      "name": "home-github", "username": "home-dev", "eddress": "home@example.com", "remotePatterns": [
-      "git@github.com:home-dev/*"
-    ]
+      "name": "home-github",
+      "username": "home-dev",
+      "eddress": "home@example.com",
+      "remotePatterns": ["git@github.com:home-dev/*"]
     }
   ]
 }
@@ -177,12 +181,12 @@ Contributions are welcome! Report bugs, suggest features, and contribute code:
 
 - 🐛 **Mistake reports?** Open an issue on GitHub with reproduction steps
 - 💡 **Fresh ideas?** Create an issue to discuss
-- 📖 **Documentation confusing?** Report it so we can enhance it
+- 📖 **Documentation confusing?** Report it so we can improve
 - 🚀 **Need new features?** Share the use cases to help us understand requirements
-- ⚡ **Performance issue?** Help us optimize via reporting slow operations
+- ⚡ **Performance issue?** Help us optimize through reporting slow operations
 - 🔧 **Configuration problem?** Ask questions about complex setups
-- 📢 **Track project progress?** Watch the repo to get new releases and features
-- 🌟 **Success stories?** Share how this package enhanced the workflow
+- 📢 **Follow project progress?** Watch the repo to get new releases and features
+- 🌟 **Success stories?** Share how this package improved the workflow
 - 💬 **Feedback?** We welcome suggestions and comments
 
 ---
@@ -196,7 +200,7 @@ New code contributions, follow this process:
 3. **Navigate**: Navigate to the cloned project (`cd repo-name`)
 4. **Branch**: Create a feature branch (`git checkout -b feature/xxx`).
 5. **Code**: Implement the changes with comprehensive tests
-6. **Testing**: (Golang project) Ensure tests pass (`go test ./...`) and adhere to Go code style conventions
+6. **Testing**: (Golang project) Ensure tests pass (`go test ./...`) and follow Go code style conventions
 7. **Documentation**: Update documentation to support client-facing changes
 8. **Stage**: Stage changes (`git add .`)
 9. **Commit**: Commit changes (`git commit -m "Add feature xxx"`) ensuring backward compatible code

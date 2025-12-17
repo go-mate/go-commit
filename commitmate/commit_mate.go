@@ -23,7 +23,6 @@ import (
 	"github.com/yyle88/formatgo"
 	"github.com/yyle88/must"
 	"github.com/yyle88/neatjson/neatjsons"
-	"github.com/yyle88/osexec"
 	"github.com/yyle88/osexistpath/osmustexist"
 	"github.com/yyle88/rese"
 	"github.com/yyle88/tern/zerotern"
@@ -163,7 +162,7 @@ func GitCommit(projectRoot string, commitFlags *CommitFlags) error {
 	// Exit when no changes to commit
 	// 如果没有更改要提交则提前退出
 	if status = rese.V1(client.Status()); len(status) == 0 {
-		canContinue := commitFlags.IsAmend && hasMetadataChanges(client, commitInfo)
+		canContinue := commitFlags.IsAmend && detectMetadataChange(client, commitInfo)
 		if !canContinue {
 			zaplog.SUG.Debugln("no change return")
 			return nil
@@ -204,14 +203,14 @@ func GitCommit(projectRoot string, commitFlags *CommitFlags) error {
 	return nil
 }
 
-// hasMetadataChanges checks if commit metadata differs from HEAD commit
+// detectMetadataChange checks if commit metadata differs from HEAD commit
 // Returns true when commit message, author's name, and author's mailbox differs from HEAD
 // Returns false when no metadata changes exist
 //
-// hasMetadataChanges 检查提交元数据是否与 HEAD 提交不同
+// detectMetadataChange 检查提交元数据是否与 HEAD 提交不同
 // 当提交消息、作者名称和作者邮箱与 HEAD 不同时返回 true
 // 当没有元数据改动时返回 false
-func hasMetadataChanges(client *gogit.Client, commitInfo *gogit.CommitInfo) bool {
+func detectMetadataChange(client *gogit.Client, commitInfo *gogit.CommitInfo) bool {
 	// Get HEAD commit to compare
 	// 获取 HEAD 提交进行比较
 	topReference := rese.P1(client.Repo().Head())
@@ -306,7 +305,7 @@ func FormatChangedGoFiles(projectRoot string, client *gogit.Client, allowFormat 
 // 自动选择并使用最佳匹配的签名配置
 func (f *CommitFlags) ApplyProjectConfig(projectRoot string, config *CommitConfig) {
 	zaplog.SUG.Debugln("applying project config to commit flags")
-	f.ApplySignature(rese.V1(config.ResolveSignature(projectRoot)))
+	f.ApplySignature(config.ResolveSignature(projectRoot))
 }
 
 // ApplySignature applies signature configuration to flags
@@ -423,48 +422,21 @@ func validateConfig(config *CommitConfig) {
 // 提取 Git 远程 URL 并执行基于模式的签名匹配
 // 优先使用 'origin' 远程，但在签名解析时回退到第一个可用远程
 // 返回最佳匹配的签名，如果没有合适的模式匹配远程配置则返回 nil
-func (config *CommitConfig) ResolveSignature(projectRoot string) (*SignatureConfig, error) {
-	// Get Git remote URL
-	// 获取 Git 远程 URL
-	client := rese.P1(gogit.New(projectRoot))
-
-	// 获取远程仓库地址，而且这里允许为空
-	remotes := rese.V1(client.Repo().Remotes())
-
-	// Use origin remote if available
-	// 如果可用则使用 origin 远程
-	var remoteURL string
-	if len(remotes) > 0 {
-		for _, remote := range remotes {
-			remoteConfig := remote.Config()
-			if remoteConfig.Name == "origin" && len(remoteConfig.URLs) > 0 {
-				remoteURL = remoteConfig.URLs[0]
-				break
-			}
-		}
-		// Use first remote if no origin
-		// 如果没有 origin 则回退到第一个远程
-		if remoteURL == "" && len(remotes[0].Config().URLs) > 0 {
-			remoteURL = remotes[0].Config().URLs[0]
-		}
+func (config *CommitConfig) ResolveSignature(projectRoot string) *SignatureConfig {
+	remoteURL := getOriginRemoteURL(projectRoot)
+	if remoteURL == "" {
+		zaplog.SUG.Debugln("skip signature resolution: remote URL is not configured")
+		return nil
 	}
-
 	zaplog.SUG.Debugln("remote URL:", remoteURL)
 
-	// Find and return matching signature
-	// 查找并返回匹配的签名
-	if remoteURL != "" {
-		signature := config.MatchSignature(remoteURL)
-		if signature != nil {
-			zaplog.SUG.Debugln("matched signature:", signature.Name)
-			return signature, nil
-		}
-		return nil, nil
+	signature := config.MatchSignature(remoteURL)
+	if signature == nil {
+		zaplog.SUG.Debugln("no matching signature found")
+		return nil
 	}
-
-	// No matching signature found
-	// 没有找到匹配的签名
-	return nil, nil
+	zaplog.SUG.Debugln("matched signature:", signature.Name)
+	return signature
 }
 
 // MatchSignature finds the best signature configuration for the specified remote URL
@@ -540,19 +512,4 @@ func setFromGitConfig(projectRoot string, commitInfo *gogit.CommitInfo) {
 			zaplog.SUG.Debugln("using git config user.email:", gitMailbox)
 		}
 	}
-}
-
-// getGitConfigValue retrieves a configuration value from Git config in the specified project DIR
-// Returns blank string if command fails or config item doesn't exist
-//
-// getGitConfigValue 从指定项目 DIR 的 Git 配置获取配置值
-// 如果命令失败或配置键不存在则返回空字符串
-func getGitConfigValue(projectRoot, key string) string {
-	execConfig := osexec.NewExecConfig().WithPath(projectRoot)
-	output, err := execConfig.Exec("git", "config", key)
-	if err != nil {
-		zaplog.SUG.Debugln("cannot get git config", key, ":", err)
-		return ""
-	}
-	return strings.TrimSpace(string(output))
 }
